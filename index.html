@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyecto Eliza</title>
+    <link rel="icon" href="logo.png">
+
+    <script src="elizabot.js"></script>
+    <script src="espanol.js"></script>
+
+    <style>
+        @font-face {
+            font-family: 'IBM Plex Mono';
+            src: url('letras/IBMPlexMono.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Inter';
+            src: url('letras/Inter.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Josefin Sans';
+            src: url('letras/JosefinSans.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('letras/OpenDyslexic.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Varela Round';
+            src: url('letras/VarelaRound.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Lexend';
+            src: url('letras/Lexend.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Luciole';
+            src: url('letras/Luciole.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Andika';
+            src: url('letras/Andika.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Space Mono';
+            src: url('letras/SpaceMono.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Atkinson Hyperlegible';
+            src: url('letras/AtkinsonHyperlegible.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Micro5';
+            src: url('letras/Micro5.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        :root {
+            --mono: 'IBM Plex Mono', monospace;
+            --logo: 'Micro5', cursive;
+            --bg: #FAFAFA;
+            --text: #18181A;
+            --border: #18181A;
+            --hover: #E0E0E0;
+        }
+
+        * { box-sizing: border-box; }
+        ::selection { background: var(--text); color: var(--bg); }
+
+        body {
+            margin: 0;
+            font-family: var(--mono);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .menubar {
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            padding: 4px 16px;
+            display: flex;
+            gap: 24px;
+            font-size: 13px;
+            height: 28px;
+            align-items: center;
+        }
+
+        .menu { position: relative; }
+        .menu-item { cursor: pointer; color: var(--text); padding: 0 4px; }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            min-width: 220px;
+            margin-top: 2px;
+            z-index: 10;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .dropdown-content a {
+            display: block;
+            padding: 6px 12px;
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .dropdown-content a:hover {
+            background: var(--text);
+            color: var(--bg);
+        }
+
+        .container {
+            flex: 1;
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: var(--logo);
+            margin: .4em 0 .8em;
+            font-weight: normal;
+            letter-spacing: 1px;
+        }
+
+        #e_display {
+            width: 100%;
+            min-height: 60vh;              /* tamaño inicial (como antes) */
+            height: auto;                  /* puede crecer más allá */
+            border: 1px solid var(--border);
+            padding: 16px;
+            background: var(--bg);
+            color: var(--text);
+            white-space: pre-wrap;
+            /* Sin overflow-y → no hay scroll interno, la caja simplemente crece */
+        }
+
+        form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            font-family: var(--mono);
+            border: 1px solid var(--border);
+            padding: 12px 14px;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        input[type="text"]::placeholder {
+            color: var(--text);
+            opacity: 0.55;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 22px;
+            justify-content: center;
+        }
+
+        input[type="submit"],
+        input[type="reset"] {
+            font-family: var(--mono);
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            padding: 10px 26px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover,
+        input[type="reset"]:hover {
+            background: var(--hover);
+        }
+    </style>
+
+    <script>
+        // ... (el resto del JavaScript se mantiene exactamente igual, no hay cambios aquí)
+        var eliza = new ElizaBot();
+        var elizaLines = [];
+        var displayCols = 70;
+        var displayRows = 22;
+        var typingTimeout;
+
+        let fontSizeLevel = 3;
+        const fontSizes = [11, 13, 15, 17, 19, 21, 23];
+
+        let currentTheme = 1;
+        const themes = [
+            { name: 'Oscuro',             text: '#FFFFFF', bg: '#18181A', border: '#FFFFFF', hover: '#282828' },
+            { name: 'Claro',              text: '#18181A', bg: '#FAFAFA', border: '#18181A', hover: '#E0E0E0' },
+            { name: 'Rosa',               text: '#851044', bg: '#FDE7F3', border: '#851044', hover: '#E0C0D0' },
+            { name: 'Azul',               text: '#1D398C', bg: '#DBEAFF', border: '#1D398C', hover: '#C0D8FF' },
+            { name: 'Rojo',               text: '#FFCCD5', bg: '#800E2F', border: '#FFCCD5', hover: '#6A0C26' },
+            { name: 'Verde',              text: '#D0F9E7', bg: '#012C22', border: '#D0F9E7', hover: '#001F18' },
+            { name: 'Púrpura',            text: '#501E75', bg: '#F4E8FF', border: '#501E75', hover: '#E0C8FF' },
+            { name: 'Índigo',             text: '#E1E7FF', bg: '#1E1A4D', border: '#E1E7FF', hover: '#15123A' },
+            { name: 'Cereza',             text: '#FD99B5', bg: '#602829', border: '#FD99B5', hover: '#4C1F20' },
+            { name: 'Musgo',              text: '#CDE0DC', bg: '#4F5040', border: '#CDE0DC', hover: '#5E5F4D' },
+            { name: 'Medianoche',         text: '#DED0AD', bg: '#181F2F', border: '#DED0AD', hover: '#232C42' },
+            { name: 'Menta rosada',       text: '#02634F', bg: '#F8D0DB', border: '#02634F', hover: '#E0B8C5' },
+            { name: 'Café Crema',         text: '#FACECD', bg: '#7B4930', border: '#FACECD', hover: '#6A3F28' },
+            { name: 'Lavanda azul',       text: '#E9D8FF', bg: '#375088', border: '#E9D8FF', hover: '#425E9E' },
+            { name: 'Esmeralda',          text: '#012C22', bg: '#D0F9E7', border: '#012C22', hover: '#B8E0CF' },
+            { name: 'Zafiro',             text: '#375088', bg: '#E9D8FF', border: '#375088', hover: '#A8B8E0' },
+            { name: 'Amatista',           text: '#D7C9E9', bg: '#502F4C', border: '#D7C9E9', hover: '#3C233A' }
+        ];
+
+        let currentFont = 'IBM Plex Mono';
+        const availableFonts = [
+            { name: 'IBM Plex Mono', family: 'IBM Plex Mono' },
+            { name: 'Inter',         family: 'Inter' },
+            { name: 'Josefin Sans',  family: 'Josefin Sans' },
+            { name: 'OpenDyslexic',  family: 'OpenDyslexic' },
+            { name: 'Varela Round',  family: 'Varela Round' },
+            { name: 'Lexend',        family: 'Lexend' },
+            { name: 'Luciole',       family: 'Luciole' },
+            { name: 'Andika',        family: 'Andika' },
+            { name: 'Space Mono',    family: 'Space Mono' },
+            { name: 'Atkinson Hyperlegible', family: 'Atkinson Hyperlegible' }
+        ];
+
+        function applyFont() {
+            document.documentElement.style.setProperty('--mono', `"${currentFont}", monospace`);
+            document.getElementById('e_display').style.fontFamily = `var(--mono)`;
+            document.querySelector('input[type="text"]').style.fontFamily = `var(--mono)`;
+            document.querySelectorAll('input[type="submit"], input[type="reset"]').forEach(el => {
+                el.style.fontFamily = `var(--mono)`;
+            });
+        }
+
+        function setFont(fontName) {
+            currentFont = fontName;
+            applyFont();
+        }
+
+        function applyTheme(){
+            const t = themes[currentTheme];
+            document.documentElement.style.setProperty('--bg', t.bg);
+            document.documentElement.style.setProperty('--text', t.text);
+            document.documentElement.style.setProperty('--border', t.border);
+            document.documentElement.style.setProperty('--hover', t.hover);
+            document.body.style.background = t.bg;
+            applyFontSize();
+        }
+
+        function setTheme(i){ 
+            currentTheme = i; 
+            applyTheme(); 
+        }
+
+        function applyFontSize(){
+            const s = fontSizes[fontSizeLevel];
+            document.body.style.fontSize = s + 'px';
+            
+            document.querySelector('.logo').style.fontSize = (s * 0.22) + 'rem';
+            
+            document.getElementById('e_display').style.fontSize = s + 'px';
+
+            document.querySelector('input[type="text"]').style.fontSize = (s * 1.05) + 'px';
+            document.querySelectorAll('input[type="submit"], input[type="reset"]').forEach(b => {
+                b.style.fontSize = (s * 0.95) + 'px';
+            });
+        }
+
+        function fontUp(){ 
+            if(fontSizeLevel < fontSizes.length-1){ 
+                fontSizeLevel++; 
+                applyFontSize(); 
+            } 
+        }
+        function fontDown(){ 
+            if(fontSizeLevel > 0){ 
+                fontSizeLevel--; 
+                applyFontSize(); 
+            } 
+        }
+
+        function elizaReset(){ 
+            eliza.reset(); 
+            elizaLines=[]; 
+            elizaStep(); 
+        }
+
+        function elizaStep(){
+            const f = document.forms.e_form;
+            const input = f.e_input.value.trim();
+
+            if(input){
+                elizaLines.push('<strong>YOU:</strong> ' + input);
+                document.getElementById('e_display').innerHTML = 
+                    elizaLines.join('<br>') + '<br><strong>ELIZA:</strong> escribiendo...';
+
+                clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(() => {
+                    elizaLines.push('<strong>ELIZA:</strong> ' + eliza.transform(input));
+                    document.getElementById('e_display').innerHTML = elizaLines.join('<br>');
+                }, 900 + Math.random() * 600);
+            } else if(!elizaLines.length){
+                elizaLines.push('<strong>ELIZA:</strong> ' + eliza.getInitial());
+                document.getElementById('e_display').innerHTML = elizaLines[0];
+            }
+
+            f.e_input.value = '';
+            f.e_input.focus();
+        }
+
+        function toggleMenu(id){
+            const m = document.getElementById(id);
+            m.style.display = m.style.display === 'block' ? 'none' : 'block';
+            document.querySelectorAll('.dropdown-content').forEach(o => {
+                if(o !== m) o.style.display = 'none';
+            });
+        }
+
+        window.onclick = e => {
+            if(!e.target.matches('.menu-item')){
+                document.querySelectorAll('.dropdown-content').forEach(m => m.style.display = 'none');
+            }
+        };
+    </script>
+</head>
+
+<body onload="applyTheme(); applyFontSize(); applyFont(); setTimeout(elizaReset,120)">
+
+<div class="menubar">
+    <!-- Menú igual que antes, sin cambios -->
+    <div class="menu">
+        <span class="menu-item" onclick="toggleMenu('menuArchivo')">Menú</span>
+        <div id="menuArchivo" class="dropdown-content">
+            <a href="index.html">Inicio</a>
+            <a href="acerca-de-eliza.html">Acerca de Eliza</a>
+            <a href="sobre-el-proyecto.html">Sobre el proyecto</a>
+            <a href="#" onclick="elizaReset();return false">Nueva conversación</a>
+        </div>
+    </div>
+
+    <div class="menu">
+        <span class="menu-item" onclick="toggleMenu('menuTema')">Tema</span>
+        <div id="menuTema" class="dropdown-content">
+            <a href="#" onclick="setTheme(0);return false">Oscuro</a>
+            <a href="#" onclick="setTheme(1);return false">Claro</a>
+            <a href="#" onclick="setTheme(2);return false">Rosa</a>
+            <a href="#" onclick="setTheme(3);return false">Azul</a>
+            <a href="#" onclick="setTheme(4);return false">Rojo</a>
+            <a href="#" onclick="setTheme(5);return false">Verde</a>
+            <a href="#" onclick="setTheme(6);return false">Púrpura</a>
+            <a href="#" onclick="setTheme(7);return false">Índigo</a>
+            <a href="#" onclick="setTheme(8);return false">Cereza</a>
+            <a href="#" onclick="setTheme(9);return false">Musgo</a>
+            <a href="#" onclick="setTheme(10);return false">Medianoche</a>
+            <a href="#" onclick="setTheme(11);return false">Menta rosada</a>
+            <a href="#" onclick="setTheme(12);return false">Café Crema</a>
+            <a href="#" onclick="setTheme(13);return false">Lavanda azul</a>
+            <a href="#" onclick="setTheme(14);return false">Esmeralda</a>
+            <a href="#" onclick="setTheme(15);return false">Zafiro</a>
+            <a href="#" onclick="setTheme(16);return false">Amatista</a>
+        </div>
+    </div>
+
+    <div class="menu">
+        <span class="menu-item" onclick="toggleMenu('menuFuente')">Fuente</span>
+        <div id="menuFuente" class="dropdown-content">
+            <a href="#" onclick="setFont('IBM Plex Mono');return false">IBM Plex Mono</a>
+            <a href="#" onclick="setFont('Inter');return false">Inter</a>
+            <a href="#" onclick="setFont('Josefin Sans');return false">Josefin Sans</a>
+            <a href="#" onclick="setFont('OpenDyslexic');return false">OpenDyslexic</a>
+            <a href="#" onclick="setFont('Varela Round');return false">Varela Round</a>
+            <a href="#" onclick="setFont('Lexend');return false">Lexend</a>
+            <a href="#" onclick="setFont('Luciole');return false">Luciole</a>
+            <a href="#" onclick="setFont('Andika');return false">Andika</a>
+            <a href="#" onclick="setFont('Space Mono');return false">Space Mono</a>
+            <a href="#" onclick="setFont('Atkinson Hyperlegible');return false">Atkinson Hyperlegible</a>
+        </div>
+    </div>
+
+    <div class="menu">
+        <span class="menu-item" onclick="fontDown()">Aa-</span>
+        <span class="menu-item" onclick="fontUp()">Aa+</span>
+    </div>
+</div>
+
+<div class="container">
+    <h1 class="logo">Eliza</h1>
+
+    <form name="e_form" onsubmit="elizaStep();return false">
+        <div id="e_display"></div>
+        <input type="text" name="e_input" placeholder="Escribe aquí..." autocomplete="off">
+        <div class="buttons">
+            <input type="submit" value="Hablar">
+            <input type="reset" value="Restablecer" onclick="setTimeout(elizaReset,100)">
+        </div>
+    </form>
+</div>
+
+</body>
+</html>
