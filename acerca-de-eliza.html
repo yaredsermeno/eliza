@@ -81,7 +81,19 @@
             --text: #18181A;
             --border: #18181A;
             --hover: #E0E0E0;
+            --code-bg: #f8f8f8;
+            --code-border: #ddd;
+            --code-text: #2d2d2d;
         }
+
+        [data-theme="oscuro"] {
+            --code-bg: #1e1e1e;
+            --code-border: #444;
+            --code-text: #d4d4d4;
+        }
+
+        [data-theme="claro"]  { --code-bg: #f8f8f8; --code-border: #ddd; --code-text: #2d2d2d; }
+        /* Los demás temas usan los valores por defecto o heredan bien */
 
         * { box-sizing: border-box; }
         ::selection { background: var(--text); color: var(--bg); }
@@ -120,7 +132,6 @@
             margin-top: 2px;
             z-index: 10;
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-            /* Sin max-height ni overflow → no habrá scroll interno en ningún menú */
         }
 
         .dropdown-content a {
@@ -159,7 +170,7 @@
             max-width: 680px;
         }
 
-        .about-content h2 {
+        .about-content h2, .about-content h3 {
             margin-top: 2em;
             margin-bottom: 0.6em;
         }
@@ -176,54 +187,98 @@
         .about-content li {
             margin-bottom: 0.6em;
         }
+
+        .download-btn {
+            display: inline-block;
+            margin: 2.5em 0 1.5em;
+            padding: 0.8em 1.6em;
+            font-size: 1.1em;
+            font-family: var(--mono);
+            color: var(--text);
+            background: var(--bg);
+            border: 2px solid var(--border);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .download-btn:hover {
+            background: var(--hover);
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
+        }
+
+        .download-btn:active {
+            transform: translateY(1px);
+        }
+
+        .center { text-align: center; }
+
+        pre.code-example {
+            background: var(--code-bg);
+            color: var(--code-text);
+            border: 1px solid var(--code-border);
+            padding: 1.2em;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 0.95em;
+            margin: 1.4em 0;
+        }
+
+        pre.code-example code {
+            font-family: var(--mono);
+        }
     </style>
 
     <script>
-        /* ===== TAMAÑOS ===== */
         let fontSizeLevel = 3;
         const fontSizes = [11, 13, 15, 17, 19, 21, 23];
 
-        /* ===== TEMAS ===== */
         let currentTheme = 1;
         const themes = [
-            { name: 'Oscuro',             text: '#FFFFFF', bg: '#18181A', border: '#FFFFFF', hover: '#282828' },
-            { name: 'Claro',              text: '#18181A', bg: '#FAFAFA', border: '#18181A', hover: '#E0E0E0' },
-            { name: 'Rosa',               text: '#851044', bg: '#FDE7F3', border: '#851044', hover: '#E0C0D0' },
-            { name: 'Azul',               text: '#1D398C', bg: '#DBEAFF', border: '#1D398C', hover: '#C0D8FF' },
-            { name: 'Rojo',               text: '#FFCCD5', bg: '#800E2F', border: '#FFCCD5', hover: '#6A0C26' },
-            { name: 'Verde',              text: '#D0F9E7', bg: '#012C22', border: '#D0F9E7', hover: '#001F18' },
-            { name: 'Púrpura',            text: '#501E75', bg: '#F4E8FF', border: '#501E75', hover: '#E0C8FF' },
-            { name: 'Índigo',             text: '#E1E7FF', bg: '#1E1A4D', border: '#E1E7FF', hover: '#15123A' },
-            { name: 'Cereza',             text: '#FD99B5', bg: '#602829', border: '#FD99B5', hover: '#4C1F20' },
-            { name: 'Musgo',              text: '#CDE0DC', bg: '#4F5040', border: '#CDE0DC', hover: '#5E5F4D' },
-            { name: 'Medianoche',         text: '#DED0AD', bg: '#181F2F', border: '#DED0AD', hover: '#232C42' },
-            { name: 'Menta rosada',       text: '#02634F', bg: '#F8D0DB', border: '#02634F', hover: '#E0B8C5' },
-            { name: 'Café Crema',         text: '#FACECD', bg: '#7B4930', border: '#FACECD', hover: '#6A3F28' },
-            { name: 'Lavanda azul',       text: '#E9D8FF', bg: '#375088', border: '#E9D8FF', hover: '#425E9E' },
-            { name: 'Esmeralda',          text: '#012C22', bg: '#D0F9E7', border: '#012C22', hover: '#B8E0CF' },
-            { name: 'Zafiro',             text: '#375088', bg: '#E9D8FF', border: '#375088', hover: '#A8B8E0' },
-            { name: 'Amatista',           text: '#D7C9E9', bg: '#502F4C', border: '#D7C9E9', hover: '#3C233A' }
+            { name: 'Oscuro', text: '#FFFFFF', bg: '#18181A', border: '#FFFFFF', hover: '#282828', id: 'oscuro' },
+            { name: 'Claro', text: '#18181A', bg: '#FAFAFA', border: '#18181A', hover: '#E0E0E0', id: 'claro' },
+            { name: 'Rosa', text: '#851044', bg: '#FDE7F3', border: '#851044', hover: '#E0C0D0', id: 'rosa' },
+            { name: 'Azul', text: '#1D398C', bg: '#DBEAFF', border: '#1D398C', hover: '#C0D8FF', id: 'azul' },
+            { name: 'Rojo', text: '#FFCCD5', bg: '#800E2F', border: '#FFCCD5', hover: '#6A0C26', id: 'rojo' },
+            { name: 'Verde', text: '#D0F9E7', bg: '#012C22', border: '#D0F9E7', hover: '#001F18', id: 'verde' },
+            { name: 'Púrpura', text: '#501E75', bg: '#F4E8FF', border: '#501E75', hover: '#E0C8FF', id: 'purpura' },
+            { name: 'Índigo', text: '#E1E7FF', bg: '#1E1A4D', border: '#E1E7FF', hover: '#15123A', id: 'indigo' },
+            { name: 'Cereza', text: '#FD99B5', bg: '#602829', border: '#FD99B5', hover: '#4C1F20', id: 'cereza' },
+            { name: 'Musgo', text: '#CDE0DC', bg: '#4F5040', border: '#CDE0DC', hover: '#5E5F4D', id: 'musgo' },
+            { name: 'Medianoche', text: '#DED0AD', bg: '#181F2F', border: '#DED0AD', hover: '#232C42', id: 'medianoche' },
+            { name: 'Menta rosada', text: '#02634F', bg: '#F8D0DB', border: '#02634F', hover: '#E0B8C5', id: 'menta' },
+            { name: 'Café Crema', text: '#FACECD', bg: '#7B4930', border: '#FACECD', hover: '#6A3F28', id: 'cafe' },
+            { name: 'Lavanda azul', text: '#E9D8FF', bg: '#375088', border: '#E9D8FF', hover: '#425E9E', id: 'lavanda' },
+            { name: 'Esmeralda', text: '#012C22', bg: '#D0F9E7', border: '#012C22', hover: '#B8E0CF', id: 'esmeralda' },
+            { name: 'Zafiro', text: '#375088', bg: '#E9D8FF', border: '#375088', hover: '#A8B8E0', id: 'zafiro' },
+            { name: 'Amatista', text: '#D7C9E9', bg: '#502F4C', border: '#D7C9E9', hover: '#3C233A', id: 'amatista' }
         ];
 
-        /* ===== FUENTES ===== */
         let currentFont = 'IBM Plex Mono';
-        const availableFonts = [
-            { name: 'IBM Plex Mono', family: 'IBM Plex Mono' },
-            { name: 'Inter',         family: 'Inter' },
-            { name: 'Josefin Sans',  family: 'Josefin Sans' },
-            { name: 'OpenDyslexic',  family: 'OpenDyslexic' },
-            { name: 'Varela Round',  family: 'Varela Round' },
-            { name: 'Lexend',        family: 'Lexend' },
-            { name: 'Luciole',       family: 'Luciole' },
-            { name: 'Andika',        family: 'Andika' },
-            { name: 'Space Mono',    family: 'Space Mono' },
-            { name: 'Atkinson Hyperlegible', family: 'Atkinson Hyperlegible' }
-        ];
+
+        function applyTheme() {
+            const t = themes[currentTheme];
+            document.documentElement.style.setProperty('--bg', t.bg);
+            document.documentElement.style.setProperty('--text', t.text);
+            document.documentElement.style.setProperty('--border', t.border);
+            document.documentElement.style.setProperty('--hover', t.hover);
+            document.body.style.background = t.bg;
+            document.body.setAttribute('data-theme', t.id || 'claro');
+            applyFontSize();
+        }
+
+        function setTheme(i) {
+            currentTheme = i;
+            applyTheme();
+        }
 
         function applyFont() {
             document.documentElement.style.setProperty('--mono', `"${currentFont}", monospace`);
-            document.querySelectorAll('p, h1, h2, h3, li, a, .logo').forEach(el => {
-                el.style.fontFamily = el.classList.contains('logo') ? `'Micro5', cursive` : `var(--mono)`;
+            document.querySelectorAll('body, p, li, a, .download-btn, pre.code-example').forEach(el => {
+                el.style.fontFamily = `var(--mono)`;
+            });
+            document.querySelectorAll('.logo').forEach(el => {
+                el.style.fontFamily = `'Micro5', cursive`;
             });
         }
 
@@ -232,66 +287,51 @@
             applyFont();
         }
 
-        function applyTheme(){
-            const t = themes[currentTheme];
-            document.documentElement.style.setProperty('--bg', t.bg);
-            document.documentElement.style.setProperty('--text', t.text);
-            document.documentElement.style.setProperty('--border', t.border);
-            document.documentElement.style.setProperty('--hover', t.hover);
-            document.body.style.background = t.bg;
-            applyFontSize();
-        }
-
-        function setTheme(i){ 
-            currentTheme = i; 
-            applyTheme(); 
-        }
-
-        /* ===== TAMAÑO ===== */
-        function applyFontSize(){
+        function applyFontSize() {
             const s = fontSizes[fontSizeLevel];
             document.body.style.fontSize = s + 'px';
-            
             document.querySelector('.logo').style.fontSize = (s * 0.22) + 'rem';
-            
-            document.querySelectorAll('p, li').forEach(el => {
-                el.style.fontSize = s + 'px';
-            });
             document.querySelectorAll('h2, h3').forEach(el => {
                 el.style.fontSize = (s * 1.4) + 'px';
             });
         }
 
-        function fontUp(){ 
-            if(fontSizeLevel < fontSizes.length-1){ 
-                fontSizeLevel++; 
-                applyFontSize(); 
-            } 
-        }
-        function fontDown(){ 
-            if(fontSizeLevel > 0){ 
-                fontSizeLevel--; 
-                applyFontSize(); 
-            } 
+        function fontUp() {
+            if (fontSizeLevel < fontSizes.length - 1) {
+                fontSizeLevel++;
+                applyFontSize();
+            }
         }
 
-        function toggleMenu(id){
+        function fontDown() {
+            if (fontSizeLevel > 0) {
+                fontSizeLevel--;
+                applyFontSize();
+            }
+        }
+
+        function toggleMenu(id) {
             const m = document.getElementById(id);
             m.style.display = m.style.display === 'block' ? 'none' : 'block';
             document.querySelectorAll('.dropdown-content').forEach(o => {
-                if(o !== m) o.style.display = 'none';
+                if (o !== m) o.style.display = 'none';
             });
         }
 
-        window.onclick = e => {
-            if(!e.target.matches('.menu-item')){
+        window.onclick = function(e) {
+            if (!e.target.matches('.menu-item')) {
                 document.querySelectorAll('.dropdown-content').forEach(m => m.style.display = 'none');
             }
         };
+
+        window.onload = function() {
+            applyTheme();
+            applyFontSize();
+            applyFont();
+        };
     </script>
 </head>
-
-<body onload="applyTheme(); applyFontSize(); applyFont()">
+<body>
 
 <div class="menubar">
     <div class="menu">
@@ -353,26 +393,83 @@
     <h1 class="logo">Proyecto > Eliza</h1>
 
     <div class="about-content">
+
         <h2>Acerca de Eliza</h2>
 
+        <h3>¿Cómo funciona Eliza realmente?</h3>
+
+        <p>Esta versión usa la librería <strong>elizabot.js</strong> (creada por Norbert Landsteiner – mass:werk), que es una fiel implementación en JavaScript del Eliza original de Joseph Weizenbaum (1966).</p>
+
+        <p>El mecanismo es muy simple pero efectivo:</p>
+        <ul>
+            <li>Se define un conjunto de <strong>patrones</strong> (expresiones regulares o palabras clave) que buscan coincidencias en lo que escribe el usuario.</li>
+            <li>Cada patrón tiene asociadas varias <strong>respuestas posibles</strong> (en esta versión todas en español).</li>
+            <li>Cuando hay coincidencia, se escoge una respuesta al azar (o la primera, según configuración).</li>
+            <li>Algunas respuestas incluyen <strong>transformaciones</strong> del texto del usuario (por ejemplo: “yo estoy triste” → “¿por qué estás triste?” o “mi mamá” → “háblame de tu mamá”).</li>
+            <li>Si no hay coincidencia fuerte, se usan respuestas genéricas (“cuéntame más”, “¿y eso cómo te hace sentir?”, etc.).</li>
+            <li>No hay comprensión real: solo coincidencia de patrones y sustitución de texto.</li>
+        </ul>
+
+        <p>Lo interesante (y fácil) es que <strong>cualquiera puede modificar o ampliar Eliza</strong>:</p>
+        <ul>
+            <li>Los patrones y respuestas están en un archivo JavaScript separado (en este caso <code>eliza-espanol.js</code>).</li>
+            <li>Son arreglos de JavaScript con esta estructura aproximada:</li>
+        </ul>
+
+        <pre class="code-example"><code>[
+  ["patrón1", ["respuesta A", "respuesta B"]],
+  ["me siento (.*)", ["¿Desde cuándo te sientes $1?", "Cuéntame más sobre eso..."]],
+  ["mi (madre|papá)", ["Háblame más de tu $1.", "¿Cómo es tu relación con $1?"]],
+  ["no (.*)", ["¿Por qué dices que no $1?", "Parece que hay algo que te molesta cuando dices 'no'."]],
+  ["quiero (.*)", ["¿Qué significaría para ti si pudieras $1?", "¿De verdad quieres $1?"]]
+]</code></pre>
+
+        <p>El <code>$1</code>, <code>$2</code>... se reemplazan por las partes capturadas del patrón.</p>
+
+        <p class="center">
+            <a href="eliza-espanol-js.zip" class="download-btn" download>
+                Descargar eliza-espanol-js.zip<br>
+                <small>(contiene: index.html + elizabot.js + eliza-espanol.js)</small>
+            </a>
+        </p>
+
+        <p>El archivo zip incluye exactamente estos tres archivos:</p>
+        <ul>
+            <li><code>index.html</code> → página de ejemplo básica para probar tu Eliza</li>
+            <li><code>elizabot.js</code> → el motor principal (no lo modifiques si no es necesario)</li>
+            <li><code>eliza-espanol.js</code> → los patrones y respuestas en español (¡aquí puedes agregar, cambiar o crear tu propia personalidad!)</li>
+        </ul>
+
+       
+
+        <hr style="margin: 2.5em 0; opacity: 0.4;">
+
         <p>Eliza es uno de los primeros chatbots de la historia. Fue creado en 1966 por Joseph Weizenbaum, un profesor e investigador del Instituto Tecnológico de Massachusetts (MIT). Su objetivo principal era simular una conversación entre un humano y una máquina utilizando texto simple, para demostrar las capacidades y limitaciones de los sistemas de procesamiento de lenguaje natural en esa época.</p>
-<p>Eliza simula el estilo de un terapeuta rogeriano, basado en la terapia centrada en el cliente desarrollada por Carl Rogers. En este enfoque, el terapeuta no da consejos directos ni interpreta, sino que refleja las emociones y el contenido expresado por el paciente mediante reformulaciones y preguntas abiertas, fomentando que el paciente explore sus propios sentimientos.</p>
-<p>Joseph Weizenbaum nació en 1923 en Berlín, Alemania, en una familia judía. En 1935, ante el ascenso del nazismo, huyó con su familia a Estados Unidos. Estudió matemáticas en la Universidad Wayne State y luego se unió al MIT, donde se convirtió en un pionero en informática y desarrolló el lenguaje SLIP para procesamiento de listas. Creó Eliza como experimento para explorar la comprensión del lenguaje natural por parte de las computadoras, pero nunca imaginó el impacto emocional que tendría en los usuarios.</p>
-<p>Weizenbaum se sorprendió y preocupó profundamente por cómo las personas interactuaban con Eliza. Muchos usuarios, incluso sabiendo que era un programa simple, le confiaban problemas personales, secretos íntimos y emociones profundas, tratándola como un terapeuta real. Esta reacción lo inquietó tanto que lo llevó a convertirse en un crítico acérrimo de la inteligencia artificial. En su libro "Computer Power and Human Reason: From Judgment to Calculation" publicado en 1976, advirtió sobre los riesgos de delegar decisiones humanas y éticas a las máquinas, argumentando que las computadoras carecen de verdadera comprensión, empatía y juicio moral.</p>
-<p>El funcionamiento de Eliza se basa en un sistema de reglas y patrones predefinidos llamado "scripts", especialmente el script DOCTOR. No comprende el significado real del texto, sino que busca palabras clave (como "deprimido", "madre", "siento", "mi") y selecciona respuestas preprogramadas o reformula lo dicho por el usuario en forma de pregunta. Esto crea la ilusión de empatía y comprensión, aunque en realidad sigue instrucciones rígidas sin ningún entendimiento profundo.</p>
-<p>De esta experiencia nace el llamado "Efecto Eliza", que describe la tendencia humana a proyectar inteligencia, empatía y emociones reales en programas informáticos simples que solo siguen algoritmos. Weizenbaum vio en esto un peligro para la sociedad: la deshumanización de las relaciones y la sobreconfianza en la tecnología para resolver problemas emocionales.</p>
-<p>Para ilustrar cómo funciona Eliza, aquí un ejemplo simplificado de conversación (adaptado al español y basado en el funcionamiento clásico del script DOCTOR):</p>
-<p>Usuario: Me siento muy deprimido últimamente.</p>
-<p>Eliza: Lo siento mucho de oír que estás deprimido. ¿Cuánto tiempo llevas sintiéndote así?</p>
-<p>Usuario: Desde que mi madre murió el año pasado.</p>
-<p>Eliza: Háblame más de tu madre.</p>
-<p>Usuario: Era una persona muy importante en mi vida y la extraño mucho.</p>
-<p>Eliza: ¿Qué significa para ti que tu madre fuera tan importante?</p>
-<p>Usuario: Me hacía sentir seguro.</p>
-<p>Eliza: ¿Por qué crees que te hacía sentir seguro?</p>
-<p>Este tipo de respuestas refleja las palabras clave del usuario en forma de preguntas abiertas o reformulaciones, sin ofrecer consejos ni interpretaciones, lo que caracteriza la terapia rogeriana y genera la ilusión de una conversación terapéutica coherente.</p>
-<p>Aunque Eliza parece básica hoy en día, representó un avance revolucionario en 1966 y sigue siendo un referente clave en la historia de la inteligencia artificial, la psicología computacional y los estudios sobre la interacción humano-máquina.</p>
-         
+
+        <p>Eliza simula el estilo de un terapeuta rogeriano, basado en la terapia centrada en el cliente desarrollada por Carl Rogers. En este enfoque, el terapeuta no da consejos directos ni interpreta, sino que refleja las emociones y el contenido expresado por el paciente mediante reformulaciones y preguntas abiertas, fomentando que el paciente explore sus propios sentimientos.</p>
+
+        <p>Joseph Weizenbaum nació en 1923 en Berlín, Alemania, en una familia judía. En 1935, ante el ascenso del nazismo, huyó con su familia a Estados Unidos. Estudió matemáticas en la Universidad Wayne State y luego se unió al MIT, donde se convirtió en un pionero en informática y desarrolló el lenguaje SLIP para procesamiento de listas. Creó Eliza como experimento para explorar la comprensión del lenguaje natural por parte de las computadoras, pero nunca imaginó el impacto emocional que tendría en los usuarios.</p>
+
+        <p>Weizenbaum se sorprendió y preocupó profundamente por cómo las personas interactuaban con Eliza. Muchos usuarios, incluso sabiendo que era un programa simple, le confiaban problemas personales, secretos íntimos y emociones profundas, tratándola como un terapeuta real. Esta reacción lo inquietó tanto que lo llevó a convertirse en un crítico acérrimo de la inteligencia artificial. En su libro "Computer Power and Human Reason: From Judgment to Calculation" publicado en 1976, advirtió sobre los riesgos de delegar decisiones humanas y éticas a las máquinas, argumentando que las computadoras carecen de verdadera comprensión, empatía y juicio moral.</p>
+
+        <p>El funcionamiento de Eliza se basa en un sistema de reglas y patrones predefinidos llamado "scripts", especialmente el script DOCTOR. No comprende el significado real del texto, sino que busca palabras clave (como "deprimido", "madre", "siento", "mi") y selecciona respuestas preprogramadas o reformula lo dicho por el usuario en forma de pregunta. Esto crea la ilusión de empatía y comprensión, aunque en realidad sigue instrucciones rígidas sin ningún entendimiento profundo.</p>
+
+        <p>De esta experiencia nace el llamado "Efecto Eliza", que describe la tendencia humana a proyectar inteligencia, empatía y emociones reales en programas informáticos simples que solo siguen algoritmos. Weizenbaum vio en esto un peligro para la sociedad: la deshumanización de las relaciones y la sobreconfianza en la tecnología para resolver problemas emocionales.</p>
+
+        <p>Para ilustrar cómo funciona Eliza, aquí un ejemplo simplificado de conversación (adaptado al español y basado en el funcionamiento clásico del script DOCTOR):</p>
+        <p>Usuario: Me siento muy deprimido últimamente.</p>
+        <p>Eliza: Lo siento mucho de oír que estás deprimido. ¿Cuánto tiempo llevas sintiéndote así?</p>
+        <p>Usuario: Desde que mi madre murió el año pasado.</p>
+        <p>Eliza: Háblame más de tu madre.</p>
+        <p>Usuario: Era una persona muy importante en mi vida y la extraño mucho.</p>
+        <p>Eliza: ¿Qué significa para ti que tu madre fuera tan importante?</p>
+        <p>Usuario: Me hacía sentir seguro.</p>
+        <p>Eliza: ¿Por qué crees que te hacía sentir seguro?</p>
+
+        <p>Este tipo de respuestas refleja las palabras clave del usuario en forma de preguntas abiertas o reformulaciones, sin ofrecer consejos ni interpretaciones, lo que caracteriza la terapia rogeriana y genera la ilusión de una conversación terapéutica coherente.</p>
+
+        <p>Aunque Eliza parece básica hoy en día, representó un avance revolucionario en 1966 y sigue siendo un referente clave en la historia de la inteligencia artificial, la psicología computacional y los estudios sobre la interacción humano-máquina.</p>
+
         <p>En esta versión quise mantener la esencia minimalista y algo nostálgica del software antiguo, pero con una barra de herramientas: cambio de temas, fuentes accesibles, tamaños de texto ajustables y una interfaz que recuerda a un programa de escritorio, principalmente me inspiré en Elinks.</p>
 
         <h3>¿Qué puedes hacer aquí?</h3>
@@ -386,11 +483,12 @@
         <h3>Por qué este diseño</h3>
         <p>Decidí que Eliza no fuera un chat moderno como en las redes sociales, sino un <strong>programa</strong>. Quería que se sintiera como abrir un ejecutable antiguo en tu computadora, con menús simples, bordes negros y texto plano.</p>
 
-        <p>Espero que disfrutes de este pequeño proyecto personal tanto como yo he disfrutado al hacerlo. </p>
+        <p>Espero que disfrutes de este pequeño proyecto personal tanto como yo he disfrutado al hacerlo.</p>
 
         <p style="text-align:center; margin-top:3em; opacity:0.7;">
             Hecho con cariño por Yared Sermeño > Proyecto Eliza
         </p>
+
     </div>
 </div>
 
