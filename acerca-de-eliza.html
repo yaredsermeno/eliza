@@ -10,69 +10,18 @@
         @font-face {
             font-family: 'IBM Plex Mono';
             src: url('letras/IBMPlexMono.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
+            font-weight: normal; font-style: normal;
         }
-        @font-face {
-            font-family: 'Inter';
-            src: url('letras/Inter.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'Josefin Sans';
-            src: url('letras/JosefinSans.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'OpenDyslexic';
-            src: url('letras/OpenDyslexic.otf') format('opentype');
-            font-weight: normal;
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'Varela Round';
-            src: url('letras/VarelaRound.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'Lexend';
-            src: url('letras/Lexend.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'Luciole';
-            src: url('letras/Luciole.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'Andika';
-            src: url('letras/Andika.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'Space Mono';
-            src: url('letras/SpaceMono.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'Atkinson Hyperlegible';
-            src: url('letras/AtkinsonHyperlegible.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
-        @font-face {
-            font-family: 'Micro5';
-            src: url('letras/Micro5.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
+        @font-face { font-family: 'Inter'; src: url('letras/Inter.ttf') format('truetype'); }
+        @font-face { font-family: 'Josefin Sans'; src: url('letras/JosefinSans.ttf') format('truetype'); }
+        @font-face { font-family: 'OpenDyslexic'; src: url('letras/OpenDyslexic.otf') format('opentype'); }
+        @font-face { font-family: 'Varela Round'; src: url('letras/VarelaRound.ttf') format('truetype'); }
+        @font-face { font-family: 'Lexend'; src: url('letras/Lexend.ttf') format('truetype'); }
+        @font-face { font-family: 'Luciole'; src: url('letras/Luciole.ttf') format('truetype'); }
+        @font-face { font-family: 'Andika'; src: url('letras/Andika.ttf') format('truetype'); }
+        @font-face { font-family: 'Space Mono'; src: url('letras/SpaceMono.ttf') format('truetype'); }
+        @font-face { font-family: 'Atkinson Hyperlegible'; src: url('letras/AtkinsonHyperlegible.ttf') format('truetype'); }
+        @font-face { font-family: 'Micro5'; src: url('letras/Micro5.ttf') format('truetype'); }
 
         :root {
             --mono: 'IBM Plex Mono', monospace;
@@ -81,19 +30,82 @@
             --text: #18181A;
             --border: #18181A;
             --hover: #E0E0E0;
-            --code-bg: #f8f8f8;
-            --code-border: #ddd;
-            --code-text: #2d2d2d;
+
+            /* Código - valores por defecto (claro) */
+            --code-bg: #fdfdfd;
+            --code-border: #d1d5db;
+            --code-text: #1f2937;
         }
 
+        /* ====================== TODOS LOS TEMAS ====================== */
         [data-theme="oscuro"] {
-            --code-bg: #1e1e1e;
-            --code-border: #444;
-            --code-text: #d4d4d4;
+            --bg: #18181A; --text: #FFFFFF; --border: #FFFFFF; --hover: #282828;
+            --code-bg: #1e1e1e; --code-border: #444; --code-text: #d4d4d4;
         }
-
-        [data-theme="claro"]  { --code-bg: #f8f8f8; --code-border: #ddd; --code-text: #2d2d2d; }
-        /* Los demás temas usan los valores por defecto o heredan bien */
+        [data-theme="claro"] {
+            --bg: #FAFAFA; --text: #18181A; --border: #18181A; --hover: #E0E0E0;
+            --code-bg: #fdfdfd; --code-border: #d1d5db; --code-text: #1f2937;
+        }
+        [data-theme="rosa"] {
+            --bg: #FDE7F3; --text: #851044; --border: #851044; --hover: #E0C0D0;
+            --code-bg: #fff0f8; --code-border: #f4c2d8; --code-text: #5c1935;
+        }
+        [data-theme="azul"] {
+            --bg: #DBEAFF; --text: #1D398C; --border: #1D398C; --hover: #C0D8FF;
+            --code-bg: #f0f7ff; --code-border: #b3d0ff; --code-text: #1a365d;
+        }
+        [data-theme="rojo"] {
+            --bg: #800E2F; --text: #FFCCD5; --border: #FFCCD5; --hover: #6A0C26;
+            --code-bg: #4a0f21; --code-border: #b03a5a; --code-text: #ffe0e8;
+        }
+        [data-theme="verde"] {
+            --bg: #012C22; --text: #D0F9E7; --border: #D0F9E7; --hover: #001F18;
+            --code-bg: #0a1f18; --code-border: #2a5c48; --code-text: #d4ffe8;
+        }
+        [data-theme="purpura"] {
+            --bg: #F4E8FF; --text: #501E75; --border: #501E75; --hover: #E0C8FF;
+            --code-bg: #faf5ff; --code-border: #d8c2f0; --code-text: #3b1e5c;
+        }
+        [data-theme="indigo"] {
+            --bg: #1E1A4D; --text: #E1E7FF; --border: #E1E7FF; --hover: #15123A;
+            --code-bg: #141032; --code-border: #3a2e6e; --code-text: #e0e7ff;
+        }
+        [data-theme="cereza"] {
+            --bg: #602829; --text: #FD99B5; --border: #FD99B5; --hover: #4C1F20;
+            --code-bg: #3a1a1c; --code-border: #8a3f44; --code-text: #ffd1d8;
+        }
+        [data-theme="musgo"] {
+            --bg: #4F5040; --text: #CDE0DC; --border: #CDE0DC; --hover: #5E5F4D;
+            --code-bg: #3a3b2e; --code-border: #6a6b5a; --code-text: #e5f0eb;
+        }
+        [data-theme="medianoche"] {
+            --bg: #181F2F; --text: #DED0AD; --border: #DED0AD; --hover: #232C42;
+            --code-bg: #0f1825; --code-border: #2f3e57; --code-text: #e8d9b0;
+        }
+        [data-theme="menta"] {
+            --bg: #F8D0DB; --text: #02634F; --border: #02634F; --hover: #E0B8C5;
+            --code-bg: #ffeef3; --code-border: #e0b0c5; --code-text: #1f4a3d;
+        }
+        [data-theme="cafe"] {
+            --bg: #7B4930; --text: #FACECD; --border: #FACECD; --hover: #6A3F28;
+            --code-bg: #4a2c1c; --code-border: #9b6a4e; --code-text: #ffe8d0;
+        }
+        [data-theme="lavanda"] {
+            --bg: #375088; --text: #E9D8FF; --border: #E9D8FF; --hover: #425E9E;
+            --code-bg: #1f2f50; --code-border: #5a6d9e; --code-text: #e0d4ff;
+        }
+        [data-theme="esmeralda"] {
+            --bg: #D0F9E7; --text: #012C22; --border: #012C22; --hover: #B8E0CF;
+            --code-bg: #e8fff5; --code-border: #b0e0d0; --code-text: #0f4a3a;
+        }
+        [data-theme="zafiro"] {
+            --bg: #E9D8FF; --text: #375088; --border: #375088; --hover: #A8B8E0;
+            --code-bg: #f3ebff; --code-border: #c8b0ff; --code-text: #2b3d6e;
+        }
+        [data-theme="amatista"] {
+            --bg: #502F4C; --text: #D7C9E9; --border: #D7C9E9; --hover: #3C233A;
+            --code-bg: #331e32; --code-border: #6a4a6e; --code-text: #e8d9f0;
+        }
 
         * { box-sizing: border-box; }
         ::selection { background: var(--text); color: var(--bg); }
@@ -146,47 +158,15 @@
             color: var(--bg);
         }
 
-        .container {
-            flex: 1;
-            max-width: 760px;
-            margin: 0 auto;
-            padding: 40px 20px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        .container { flex: 1; max-width: 760px; margin: 0 auto; padding: 40px 20px 20px; display: flex; flex-direction: column; align-items: center; }
 
-        .logo {
-            font-family: var(--logo);
-            margin: 0.4em 0 1em;
-            font-weight: normal;
-            text-align: center;
-            letter-spacing: 1.2px;
-        }
+        .logo { font-family: var(--logo); margin: 0.4em 0 1em; font-weight: normal; text-align: center; letter-spacing: 1.2px; }
 
-        .about-content {
-            width: 100%;
-            line-height: 1.6;
-            max-width: 680px;
-        }
-
-        .about-content h2, .about-content h3 {
-            margin-top: 2em;
-            margin-bottom: 0.6em;
-        }
-
-        .about-content p {
-            margin-bottom: 1.2em;
-        }
-
-        .about-content ul {
-            margin: 1em 0;
-            padding-left: 1.8em;
-        }
-
-        .about-content li {
-            margin-bottom: 0.6em;
-        }
+        .about-content { width: 100%; line-height: 1.6; max-width: 680px; }
+        .about-content h2, .about-content h3 { margin-top: 2em; margin-bottom: 0.6em; }
+        .about-content p { margin-bottom: 1.2em; }
+        .about-content ul { margin: 1em 0; padding-left: 1.8em; }
+        .about-content li { margin-bottom: 0.6em; }
 
         .download-btn {
             display: inline-block;
@@ -207,28 +187,27 @@
             box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
         }
 
-        .download-btn:active {
-            transform: translateY(1px);
-        }
-
-        .center { text-align: center; }
-
         pre.code-example {
             background: var(--code-bg);
             color: var(--code-text);
             border: 1px solid var(--code-border);
-            padding: 1.2em;
-            border-radius: 4px;
+            padding: 1.3em;
+            border-radius: 6px;
             overflow-x: auto;
             font-size: 0.95em;
-            margin: 1.4em 0;
+            margin: 1.5em 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            line-height: 1.5;
         }
 
         pre.code-example code {
             font-family: var(--mono);
         }
+
+        .center { text-align: center; }
     </style>
 
+    <!-- El script JavaScript permanece igual -->
     <script>
         let fontSizeLevel = 3;
         const fontSizes = [11, 13, 15, 17, 19, 21, 23];
@@ -296,26 +275,13 @@
             });
         }
 
-        function fontUp() {
-            if (fontSizeLevel < fontSizes.length - 1) {
-                fontSizeLevel++;
-                applyFontSize();
-            }
-        }
-
-        function fontDown() {
-            if (fontSizeLevel > 0) {
-                fontSizeLevel--;
-                applyFontSize();
-            }
-        }
+        function fontUp() { if (fontSizeLevel < fontSizes.length - 1) { fontSizeLevel++; applyFontSize(); } }
+        function fontDown() { if (fontSizeLevel > 0) { fontSizeLevel--; applyFontSize(); } }
 
         function toggleMenu(id) {
             const m = document.getElementById(id);
             m.style.display = m.style.display === 'block' ? 'none' : 'block';
-            document.querySelectorAll('.dropdown-content').forEach(o => {
-                if (o !== m) o.style.display = 'none';
-            });
+            document.querySelectorAll('.dropdown-content').forEach(o => { if (o !== m) o.style.display = 'none'; });
         }
 
         window.onclick = function(e) {
@@ -491,6 +457,5 @@
 
     </div>
 </div>
-
 </body>
 </html>
