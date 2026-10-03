@@ -84,6 +84,17 @@
             align-items: center;
         }
 
+        .about-chat {
+            width: 100%;
+            margin: 22px 0 8px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            font-size: .82em;
+            line-height: 1.65;
+            opacity: .85;
+        }
+        .about-chat p { margin: 0 0 .8em; }
+
         .logo {
             font-family: var(--mono);
             display: flex;
@@ -472,6 +483,11 @@
             <input type="reset" value="Restablecer" onclick="setTimeout(elizaReset,100)">
         </div>
     </form>
+
+    <section class="about-chat" aria-label="Sobre ELIZA">
+        <p>ELIZA es un programa de conversación creado en 1966 por Joseph Weizenbaum, en el MIT. Nació como un experimento para mostrar lo superficial que puede ser el diálogo entre una persona y una máquina, y toma el papel de una psicóloga que escucha y devuelve preguntas.</p>
+        <p>No es un modelo complejo como las inteligencias artificiales de hoy: no aprende ni comprende, solo reconoce palabras clave y reformula lo que escribes. Parecer que entiende es parte del truco, y de lo curioso. Esta versión en español es un entretenimiento y no sustituye a una profesional de la salud mental.</p>
+    </section>
 </div>
 
 <div id="intro" aria-label="Proyecto Eliza">
