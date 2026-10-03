@@ -44,16 +44,47 @@ body {
 /* ─── Menubar ─── */
 .menubar {
   border-bottom: 1px solid var(--border);
-  padding: 0 14px;
+  padding: 5px 14px;
   display: flex;
-  gap: 18px;
+  gap: 4px 14px;
   font-size: 0.92rem;
-  height: 2.15rem;
+  min-height: 2.15rem;
+  height: auto;
   align-items: center;
+  flex-wrap: wrap;
   flex-shrink: 0;
   background: var(--bg);
   z-index: 40;
   user-select: none;
+}
+
+.menubar > * {
+  flex: 0 0 auto;
+}
+
+.menubar .spacer {
+  flex: 1 1 auto;
+  min-width: 12px;
+}
+
+@media (max-width: 600px) {
+  .menubar {
+    padding: 6px 10px;
+    gap: 5px 10px;
+    font-size: 0.82rem;
+  }
+
+  .menubar .status {
+    margin-right: 0 !important;
+  }
+
+  .menubar .tool {
+    padding: 0 3px;
+  }
+
+  .menubar > span[style*="width:1px"] {
+    margin: 0 2px !important;
+  }
 }
 .barlogo { display: flex; align-items: center; }
 .barlogo .sh { width: 18px; height: 18px; }
