@@ -90,10 +90,19 @@
             padding-top: 14px;
             border-top: 1px solid var(--border);
             font-size: .82em;
-            line-height: 1.65;
-            opacity: .85;
+            line-height: 1.75;
         }
-        .about-chat p { margin: 0 0 .8em; }
+        .about-chat p { margin: 0 0 1.3em; }
+        .about-chat blockquote { position: relative; margin: 0 0 1.3em; padding-left: 1.7em; }
+        .about-chat blockquote::before { content: "\201C"; position: absolute; left: -.1em; top: -.3em; font-size: 3em; line-height: 1; opacity: .45; }
+
+        .site-foot { border-top: 1px solid var(--border); text-align: center; padding: 2em 20px 2.2em; margin-top: 1em; }
+        .site-foot .brand { display: flex; align-items: center; justify-content: center; gap: .8em; font-weight: 600; letter-spacing: 1.5px; }
+        .site-foot .brand .sh { width: 2.6em; height: 2.6em; }
+        .site-foot .links { margin-top: 1em; display: flex; flex-wrap: wrap; gap: .4em 1.4em; justify-content: center; }
+        .site-foot .links a { color: var(--text); text-decoration: none; }
+        .site-foot .links a:hover { text-decoration: underline; }
+        .site-foot .made { margin: 1.3em 0 0; font-size: .85em; opacity: .7; }
 
         .logo {
             font-family: var(--mono);
@@ -139,11 +148,28 @@
             min-height: 60vh;
             height: auto;
             border: 1px solid var(--border);
-            padding: 16px;
+            padding: 18px;
             background: var(--bg);
             color: var(--text);
-            white-space: pre-wrap;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
+        .msg { max-width: 82%; display: flex; flex-direction: column; gap: 5px; }
+        .msg.me { align-self: flex-end; align-items: flex-end; }
+        .who { display: flex; align-items: center; gap: .45em; font-size: .78em; font-weight: 600; letter-spacing: .08em; opacity: .85; }
+        .who .sh { width: 1.3em; height: 1.3em; }
+        .in { padding: 10px 15px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--bg); }
+        .in:empty::before { content: "\200b"; }
+        .cur::after { content: "\258B"; animation: blink 1s steps(1) infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+        /* ELIZA: recuadro anguloso (esquinas cortadas, como Kiki) */
+        .bot .bub { --c: 13px; padding: 1px; background: var(--border);
+            clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
+        .bot .in { clip-path: polygon(calc(var(--c) - .6px) 0, 100% 0, 100% calc(100% - var(--c) + .6px), calc(100% - var(--c) + .6px) 100%, 0 100%, 0 calc(var(--c) - .6px)); }
+        /* Tú: recuadro redondeado (como Bouba) */
+        .me .bub { border: 1px solid var(--border); border-radius: 22px 22px 4px 22px; background: var(--hover); overflow: hidden; }
+        .me .in { background: transparent; }
 
         form {
             width: 100%;
@@ -173,20 +199,14 @@
             justify-content: center;
         }
 
-        input[type="submit"],
-        input[type="reset"] {
-            font-family: var(--mono);
-            border: 1px solid var(--border);
-            background: var(--bg);
-            color: var(--text);
-            padding: 10px 26px;
-            cursor: pointer;
-        }
-
-        input[type="submit"]:hover,
-        input[type="reset"]:hover {
-            background: var(--hover);
-        }
+        .composer { width: 100%; display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 999px; padding: 5px 5px 5px 20px; background: var(--bg); }
+        .composer:focus-within { outline: 2px solid var(--border); outline-offset: 2px; }
+        .composer input[type="text"] { flex: 1; width: auto; min-width: 0; border: 0; padding: 8px 0; background: transparent; outline: 0; }
+        .send { width: 42px; height: 42px; flex: none; border: 0; border-radius: 50%; background: var(--text); color: var(--bg); display: grid; place-items: center; padding: 0; cursor: pointer; }
+        .send:hover { opacity: .85; }
+        .reset { background: none; border: 0; color: var(--text); font-family: var(--mono); font-size: .85em; opacity: .65; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+        .reset:hover { opacity: 1; }
+        @media (max-width: 520px) { .msg { max-width: 94%; } }
     </style>
 
     <script>
@@ -296,32 +316,52 @@
             } 
         }
 
-        function elizaReset(){ 
-            eliza.reset(); 
-            elizaLines=[]; 
-            elizaStep(); 
+        /* Chat: burbujas (ELIZA anguloso/Kiki, tú redondeado/Bouba), respuestas que se escriben solas */
+        const WHO = { k: 'ELIZA', b: 'TÚ' };
+        const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        let busy = false;
+        const chatBox = () => document.getElementById('e_display');
+        function freeze(w){
+            chatBox().querySelectorAll('.sh.ch[data-who="' + w + '"]').forEach(svg => {
+                svg.classList.remove('ch'); svg.classList.add('st');
+                const p = svg.querySelector('path'); p.setAttribute('d', pathOf(w === 'k' ? KP : BP, 0)); p.removeAttribute('transform');
+            });
         }
-
+        function addMsg(w){
+            freeze(w);
+            const row = document.createElement('div'); row.className = 'msg ' + (w === 'k' ? 'bot' : 'me');
+            row.innerHTML = '<div class="who"><svg class="sh ch" data-who="' + w + '" viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor"/></svg><span>' + WHO[w] + '</span></div><div class="bub"><div class="in"></div></div>';
+            chatBox().append(row);
+            row.scrollIntoView({ block: 'nearest', behavior: RM ? 'auto' : 'smooth' });
+            return row;
+        }
+        function typeInto(row, text, done){
+            const el = row.querySelector('.in');
+            if(RM){ el.classList.remove('cur'); el.textContent = text; if(done) done(); return; }
+            el.classList.add('cur');
+            const step = Math.max(10, Math.min(26, 1800 / Math.max(text.length, 1)));
+            let i = 0;
+            (function tick(){
+                el.textContent = text.slice(0, ++i);
+                if(i < text.length){ typingTimeout = setTimeout(tick, step); }
+                else { el.classList.remove('cur'); row.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); if(done) done(); }
+            })();
+        }
+        function greet(){ busy = true; typeInto(addMsg('k'), eliza.getInitial(), () => { busy = false; }); }
+        function elizaReset(){
+            clearTimeout(typingTimeout);
+            eliza.reset(); chatBox().innerHTML = ''; busy = false; greet();
+        }
         function elizaStep(){
             const f = document.forms.e_form;
             const input = f.e_input.value.trim();
-
-            if(input){
-                elizaLines.push(USR + esc(input));
-                document.getElementById('e_display').innerHTML = 
-                    elizaLines.join('<br>') + '<br>' + ELZ + 'escribiendo...';
-
-                clearTimeout(typingTimeout);
-                typingTimeout = setTimeout(() => {
-                    elizaLines.push(ELZ + '' + esc(eliza.transform(input)));
-                    document.getElementById('e_display').innerHTML = elizaLines.join('<br>');
-                }, 900 + Math.random() * 600);
-            } else if(!elizaLines.length){
-                elizaLines.push(ELZ + '' + esc(eliza.getInitial()));
-                document.getElementById('e_display').innerHTML = elizaLines[0];
+            if(input && !busy){
+                busy = true;
+                addMsg('b').querySelector('.in').textContent = input;
+                const reply = addMsg('k'); reply.querySelector('.in').classList.add('cur');
+                typingTimeout = setTimeout(() => typeInto(reply, eliza.transform(input), () => { busy = false; }), 600 + Math.random() * 500);
+                f.e_input.value = '';
             }
-
-            f.e_input.value = '';
             f.e_input.focus();
         }
 
@@ -405,6 +445,7 @@
 
         function buildMenus(){
             document.getElementById('barSh').innerHTML = SH;
+            document.getElementById('ftSh').innerHTML = SH;
             document.getElementById('iB').innerHTML = SH.replace('class="sh"','class="sh st"');
             document.getElementById('menuTema').innerHTML = themes.map((t,i) =>
                 `<a href="#" onclick="setTheme(${i});return false">${t.name}</a>`).join('');
@@ -449,10 +490,11 @@
     <div class="menu">
         <span class="menu-item" onclick="toggleMenu('menuArchivo')">Menú</span>
         <div id="menuArchivo" class="dropdown-content">
-            <a href="index.html">Inicio</a>
-            <a href="acerca-de-eliza.html">Acerca de Eliza</a>
+            <a href="https://proyectoeliza.js.org/">Inicio</a>
+            <a href="https://proyectoeliza.js.org/acerca-de-eliza/">Acerca de Eliza</a>
             <a href="#" onclick="elizaReset();return false">Nueva conversación</a>
             <a href="mailto:aysermeno@outlook.com">Contacto</a>
+            <a href="https://proyectoeliza.js.org/terminal/">Terminal</a>
         </div>
     </div>
 
@@ -476,19 +518,33 @@
     <h1 class="logo">ELIZA</h1>
 
     <form name="e_form" onsubmit="elizaStep();return false">
-        <div id="e_display"></div>
-        <input type="text" name="e_input" placeholder="Escribe aquí..." autocomplete="off">
-        <div class="buttons">
-            <input type="submit" value="Hablar">
-            <input type="reset" value="Restablecer" onclick="setTimeout(elizaReset,100)">
+        <div id="e_display" aria-live="polite"></div>
+        <div class="composer">
+            <input type="text" name="e_input" placeholder="Escribe aquí..." autocomplete="off" aria-label="Tu mensaje">
+            <button class="send" aria-label="Enviar"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
         </div>
+        <button type="button" class="reset" onclick="elizaReset()">Restablecer</button>
     </form>
 
     <section class="about-chat" aria-label="Sobre ELIZA">
-        <p>ELIZA es un programa de conversación creado en 1966 por Joseph Weizenbaum, en el MIT. Nació como un experimento para mostrar lo superficial que puede ser el diálogo entre una persona y una máquina, y toma el papel de una psicóloga que escucha y devuelve preguntas.</p>
-        <p>No es un modelo complejo como las inteligencias artificiales de hoy: no aprende ni comprende, solo reconoce palabras clave y reformula lo que escribes. Parecer que entiende es parte del truco, y de lo curioso. Esta versión en español es un entretenimiento y no sustituye a una profesional de la salud mental.</p>
+        <p>ELIZA es un chatbot escrito en 1966 por Joseph Weizenbaum que parodia a un psicoterapeuta rogeriano. Funciona, en buena parte, respondiendo al paciente con preguntas que salen de reformular sus propias afirmaciones. Así, a la frase «Me duele la cabeza» el programa puede contestar «¿Por qué dices que te duele la cabeza?», y a «Mi madre me odia» podría responder «¿Quién más en tu familia te odia?». No entiende nada: solo simula escuchar.</p>
+        <p>Weizenbaum la desarrolló en el MIT entre 1964 y 1966. Quería mostrar lo superficial que puede ser la comunicación entre una persona y una máquina, pero muchos usuarios le atribuyeron comprensión y empatía, un fenómeno que hoy se conoce como efecto ELIZA. Eligió la entrevista rogeriana porque en ella el terapeuta puede no saber nada del mundo sin que resulte extraño.</p>
+        <p>Por dentro no hay inteligencia: hay un guion con palabras clave, patrones y respuestas. Por eso es tan limitada: no recuerda la conversación completa, no capta el sentido y puede fallar con frases que ninguna regla prevé. No da consejos y no sustituye a una profesional de la salud mental.</p>
+        <blockquote>La versión de mass:werk, elizabot.js (Norbert Landsteiner, 2005), corre completa en tu navegador, sin servidor. El motor busca palabras clave y cada una tiene un rango: gana la más importante. Una regla de descomposición parte la frase, una de reensamblado arma la respuesta y los pronombres se invierten (yo→tú, mi→tu). Si no reconoce nada, usa una frase neutra o retoma algo dicho antes. Todas esas reglas viven en un guion separado del motor; aquí el guion está ampliado y en español, pero el motor es el mismo.</blockquote>
+        <p>Este proyecto usa ese mismo motor con un guion ampliado y traducido al español, dentro de una interfaz inspirada en las terminales de los años setenta y ochenta.</p>
     </section>
 </div>
+
+<footer class="site-foot">
+    <div class="brand"><span id="ftSh" aria-hidden="true"></span><span>PROYECTO ELIZA</span></div>
+    <nav class="links">
+        <a href="https://proyectoeliza.js.org/">[Principal]</a>
+        <a href="https://proyectoeliza.js.org/acerca-de-eliza/">[Acerca de Eliza]</a>
+        <a href="https://proyectoeliza.js.org/terminal/">[Terminal]</a>
+        <a href="mailto:aysermeno@outlook.com">[Contacto]</a>
+    </nav>
+    <p class="made">Hecho por Yared Sermeño</p>
+</footer>
 
 <div id="intro" aria-label="Proyecto Eliza">
     <div class="duo"><span id="iB"></span><p>PROYECTO ELIZA</p></div>
