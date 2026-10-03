@@ -296,7 +296,7 @@
             const input = f.e_input.value.trim();
 
             if(input){
-                elizaLines.push('<strong>TÚ:</strong> ' + esc(input));
+                elizaLines.push(USR + esc(input));
                 document.getElementById('e_display').innerHTML = 
                     elizaLines.join('<br>') + '<br>' + ELZ + 'escribiendo...';
 
@@ -316,7 +316,9 @@
 
         /* Símbolo Bouba: una flor de seis pétalos en gota que se cierra en círculo y vuelve a abrirse */
         const SH = '<svg class="sh" viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor"/></svg>';
-        const ELZ = '<span class="mini">' + SH + '</span><strong>ELIZA:</strong> ';
+        const ico = w => '<span class="mini"><svg class="sh ch" data-who="' + w + '" viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor"/></svg></span>';
+        const ELZ = ico('k') + '<strong>ELIZA:</strong> ';
+        const USR = ico('b') + '<strong>TÚ:</strong> ';
         const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
         const lerp = (a, b, k) => [a[0] + (b[0]-a[0])*k, a[1] + (b[1]-a[1])*k];
         const pt = p => p[0].toFixed(1) + ' ' + p[1].toFixed(1);
@@ -378,7 +380,15 @@
             else if(u < 9.1){ P = KP; m = 1; }                           // círculo
             else if(u < 10.3){ m = 1 - bloom((u-9.1)/1.2); }            // sale Bouba
             const d = pathOf(P, m), tr = 'rotate(' + ((P === BP ? -40 : 40)*m) + ' 50 50)';
-            document.querySelectorAll('.sh:not(.st) path').forEach(p => { p.setAttribute('d', d); p.setAttribute('transform', tr); });
+            document.querySelectorAll('.sh:not(.st):not(.ch) path').forEach(p => { p.setAttribute('d', d); p.setAttribute('transform', tr); });
+            const own = v => v < 3.2 ? 0 : v < 4.2 ? ease(v-3.2) : v < 4.6 ? 1 : v < 5.8 ? 1 - bloom((v-4.6)/1.2) : 0;
+            const sec = t/1000, mb = own(sec % 6.4), mk = own((sec + 3.2) % 6.4);
+            const db = pathOf(BP, mb), dk = pathOf(KP, mk);
+            document.querySelectorAll('.sh.ch').forEach(svg => {
+                const k = svg.dataset.who === 'k', p = svg.querySelector('path');
+                p.setAttribute('d', k ? dk : db);
+                p.setAttribute('transform', 'rotate(' + ((k ? 40 : -40) * (k ? mk : mb)) + ' 50 50)');
+            });
             requestAnimationFrame(frame);
         }
 
