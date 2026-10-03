@@ -1,1 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ELIZA - Terminal</title>
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="elizabot.js"></script>
+<script src="espanol.js"></script>
+<style>
+:root{--ink:#111;--soft:#cfcfcf;--line:#333}
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:var(--soft);font:11px/1.6 'Martian Mono',monospace;min-height:100vh;display:flex;flex-direction:column}
+::selection{background:#fff;color:#000}
+.sh{width:1em;height:1em;overflow:visible;flex:none}
+main{flex:1;width:100%;padding:28px 14px 24px}
+.term,.bar{width:min(100%,46em);margin:0 auto}
+.term{background:#fff;color:var(--ink);border:1px solid #9a9a9a;min-height:24em;padding:.6em .8em 1em}
+.tools{display:flex;justify-content:flex-end;gap:1em;margin-bottom:.4em}
+.tools button{background:none;border:0;padding:0;color:#666;font:inherit;cursor:pointer}
+.tools button:hover{color:#000;text-decoration:underline}
+#splash{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2em;min-height:18em;transition:opacity .45s}
+#splash.out{opacity:0}
+.splogo .sh{width:3.6em;height:3.6em;animation:pop .8s cubic-bezier(.2,1.4,.4,1) both}
+#splash p{margin:0;padding-right:.15em;letter-spacing:.16em;font-weight:600;font-size:1.3em;clip-path:inset(0 100% 0 0);animation:ty 1s steps(14) .8s forwards}
+@keyframes pop{from{opacity:0;transform:scale(.15) rotate(-120deg)}to{opacity:1;transform:none}}
+@keyframes ty{to{clip-path:inset(0 0 0 0)}}
+.rule{white-space:nowrap;overflow:hidden}
+.banner{margin:.3em 0;font:inherit;line-height:1.2;padding-left:7ch;overflow:hidden}
+.banner span{display:block;white-space:pre}
+.info{margin:.7em 0 1.3em;padding-left:3ch}
+.il{display:block}
+#content .rule,#content .banner span,#content .il{opacity:0}
+@keyframes fi{to{opacity:1}}
+@keyframes rv{from{opacity:1;clip-path:inset(0 100% 0 0)}to{opacity:1;clip-path:inset(0 0 0 0)}}
+.go .rule.r1{animation:fi .3s forwards}
+.go .banner span{animation:rv .45s steps(38) forwards}
+.go .banner span:nth-child(1){animation-delay:0.30s}.go .banner span:nth-child(2){animation-delay:0.50s}.go .banner span:nth-child(3){animation-delay:0.70s}.go .banner span:nth-child(4){animation-delay:0.90s}.go .banner span:nth-child(5){animation-delay:1.10s}
+.go .rule.r2{animation:fi .3s 1.5s forwards}
+.go .il{animation:fi .3s forwards}
+.go .il:nth-child(1){animation-delay:1.90s}.go .il:nth-child(2){animation-delay:2.20s}.go .il:nth-child(3){animation-delay:2.50s}.go .il:nth-child(4){animation-delay:2.80s}
+.fast *{animation:none!important;opacity:1!important;clip-path:none!important}
+.ln{display:flex;gap:1ch;margin:0 0 .5em}
+.pr{flex:none}
+.tx{white-space:pre-wrap;overflow-wrap:anywhere}
+.cur::after{content:"\258B";animation:bl 1s steps(1) infinite}
+@keyframes bl{50%{opacity:0}}
+.bar{display:flex;gap:.6em;margin-top:.7em;align-items:center}
+input{flex:1;min-width:0;margin-right:2em;background:#000;color:#eee;border:1px solid #888;border-radius:2px;padding:.3em .5em;font:inherit;caret-color:#fff;outline:0}
+input:focus{border-color:#fff}
+.bar button{font:inherit;background:#000;color:#ddd;border:1px solid #888;border-radius:3px;padding:.2em .7em;cursor:pointer}
+.bar button:hover{background:#fff;color:#000}
+.doc{width:min(100%,56em);margin:3.5em auto 0;line-height:1.75}
+.doc p{margin:0 0 1.4em}
+.doc blockquote{position:relative;margin:0 0 1.4em;padding-left:1.7em}
+.doc blockquote::before{content:"\201C";position:absolute;left:-.1em;top:-.3em;font-size:3em;line-height:1;color:#777}
+footer{border-top:1px solid var(--line);text-align:center;padding:2.4em 14px 2.8em;color:#eee}
+.brand{display:flex;align-items:center;justify-content:center;gap:.9em;font-weight:600;letter-spacing:.14em}
+.brand .sh{width:3.2em;height:3.2em}
+.links{margin-top:1.1em;display:flex;gap:.4em 1.4em;justify-content:center;flex-wrap:wrap}
+.links a{color:#eee;text-decoration:none}.links a:hover{text-decoration:underline}
+@media(max-width:520px){.bar{flex-wrap:wrap}input{flex-basis:100%;margin-right:0}.banner{padding-left:0}}
+</style>
+<script>
+const SH = '<svg class="sh" viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor"/></svg>';
+        const ico = w => '<span class="mini"><svg class="sh ch" data-who="' + w + '" viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor"/></svg></span>';
+        const ELZ = ico('k') + '<strong>ELIZA:</strong> ';
+        const USR = ico('b') + '<strong>TÚ:</strong> ';
+        const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        const lerp = (a, b, k) => [a[0] + (b[0]-a[0])*k, a[1] + (b[1]-a[1])*k];
+        const pt = p => p[0].toFixed(1) + ' ' + p[1].toFixed(1);
+        const PA = [-135, -72, -20, 34, 93, 153].map(d => d*Math.PI/180);
+        const PL = [40.3, 45.2, 45.7, 42.2, 41.3, 42.5];
+        const CR = 38;
+        const PW = [.2, .19, .21, .2, .18, .21], BEND = .5;
+        function petal(i, side){
+            const a = PA[i], L = PL[i], w = L*PW[i], u = [Math.cos(a), Math.sin(a)], v = [-u[1], u[0]];
+            const q = (x, y) => { y += BEND*x*x; return [50 + u[0]*x*L + v[0]*y*w, 50 + u[1]*x*L + v[1]*y*w]; };
+            return side ? [q(1,0), q(1,1.35), q(.42,1.55), q(0,0)] : [q(0,0), q(.42,-1.55), q(1,-1.35), q(1,0)];
+        }
+        function arc(s, e){
+            const P0 = [50 + CR*Math.cos(s), 50 + CR*Math.sin(s)], P1 = [50 + CR*Math.cos(e), 50 + CR*Math.sin(e)];
+            const h = 4/3*Math.tan((e-s)/4)*CR;
+            return [P0, [P0[0] - h*Math.sin(s), P0[1] + h*Math.cos(s)], [P1[0] + h*Math.sin(e), P1[1] - h*Math.cos(e)], P1];
+        }
+        function pathOf(pairs, m){
+            let d = '';
+            pairs.forEach(([f, c], j) => {
+                const g = f.map((p, k) => lerp(p, c[k], m));
+                if(!j) d += 'M' + pt(g[0]);
+                d += 'C' + pt(g[1]) + ' ' + pt(g[2]) + ' ' + pt(g[3]);
+            });
+            return d + 'Z';
+        }
+        function boubaPairs(){
+            const out = [];
+            for(let i = 0; i < 6; i++){
+                const prev = i ? PA[i-1] : PA[5] - Math.PI*2, next = i < 5 ? PA[i+1] : PA[0] + Math.PI*2;
+                out.push([petal(i,0), arc((prev + PA[i])/2, PA[i])], [petal(i,1), arc(PA[i], (PA[i] + next)/2)]);
+            }
+            return out;
+        }
+        /* Kiki: estrella irregular de seis puntas (ángulos y radios tomados del dibujo), lados rectos */
+        const KA = [-89.7, -50, -32.4, 7, 32.5, 60, 94.6, 122.5, 151.1, 163.4, 209.3, 219.4].map(d => d*Math.PI/180);
+        const KR = [44.4, 15.7, 43.1, 27.7, 46, 14.4, 43.5, 17.8, 44, 21.3, 41.8, 15.4];
+        function kikiPairs(){
+            const P = KA.map((a, i) => [50 + KR[i]*Math.cos(a), 50 + KR[i]*Math.sin(a)]);
+            return P.map((p, i) => {
+                const q = P[(i+1) % 12], e = i < 11 ? KA[i+1] : KA[0] + Math.PI*2;
+                return [[p, lerp(p,q,1/3), lerp(p,q,2/3), q], arc(KA[i], e)];
+            });
+        }
+        const BP = boubaPairs(), KP = kikiPairs();
+        const shapePath = m => pathOf(BP, m);
+        const ease = x => x*x*(3-2*x);
+        const bloom = x => { const c = 1.9, t = x - 1; return 1 + (c+1)*t*t*t + c*t*t; };
+        function draw(p, m){ p.setAttribute('d', shapePath(m)); p.setAttribute('transform', 'rotate(' + (-m*40) + ' 50 50)'); }
+        function frame(t){
+            const u = (t/1000) % 12.4;
+            let P = BP, m = 0;
+            if(u < 2) m = 0;
+            else if(u < 3.2) m = ease((u-2)/1.2);                       // Bouba se cierra
+            else if(u < 3.7) m = 1;                                      // círculo
+            else if(u < 4.9){ P = KP; m = 1 - bloom((u-3.7)/1.2); }     // sale Kiki
+            else if(u < 7.4){ P = KP; m = 0; }
+            else if(u < 8.6){ P = KP; m = ease((u-7.4)/1.2); }          // Kiki se cierra
+            else if(u < 9.1){ P = KP; m = 1; }                           // círculo
+            else if(u < 10.3){ m = 1 - bloom((u-9.1)/1.2); }            // sale Bouba
+            const d = pathOf(P, m), tr = 'rotate(' + ((P === BP ? -40 : 40)*m) + ' 50 50)';
+            document.querySelectorAll('.sh:not(.st):not(.ch) path').forEach(p => { p.setAttribute('d', d); p.setAttribute('transform', tr); });
+            const own = v => v < 3.2 ? 0 : v < 4.2 ? ease(v-3.2) : v < 4.6 ? 1 : v < 5.8 ? 1 - bloom((v-4.6)/1.2) : 0;
+            const sec = t/1000, mb = own(sec % 6.4), mk = own((sec + 3.2) % 6.4);
+            const db = pathOf(BP, mb), dk = pathOf(KP, mk);
+            document.querySelectorAll('.sh.ch').forEach(svg => {
+                const k = svg.dataset.who === 'k', p = svg.querySelector('path');
+                p.setAttribute('d', k ? dk : db);
+                p.setAttribute('transform', 'rotate(' + ((k ? 40 : -40) * (k ? mk : mb)) + ' 50 50)');
+            });
+            requestAnimationFrame(frame);
+        }
 
+        
+
+const eliza = new ElizaBot();
+const $ = s => document.querySelector(s);
+const SZ = [9, 10, 11, 12, 13, 14, 16];
+let lvl = 2, rows = [], tm, ready = false, done = false, t1, t2, t3;
+function zoom(d){ lvl = Math.min(SZ.length-1, Math.max(0, lvl + d)); document.body.style.fontSize = SZ[lvl] + 'px'; }
+function row(who, text, scroll){
+    const d = document.createElement('div'); d.className = 'ln ' + who;
+    const p = document.createElement('span'); p.className = 'pr'; p.textContent = who === 'bot' ? 'ELIZA >' : 'TÚ    >';
+    const t = document.createElement('span'); t.className = 'tx'; t.textContent = text;
+    d.append(p, t); $('#log').append(d); rows.push(d);
+    if(scroll) d.scrollIntoView({block: 'nearest', behavior: 'smooth'});
+    return d;
+}
+function restart(first){
+    clearTimeout(tm); rows.forEach(r => r.remove()); rows = [];
+    eliza.reset(); row('bot', eliza.getInitial(), !first); ready = true;
+}
+function send(e){
+    e.preventDefault();
+    const i = $('#in'), v = i.value.trim(); i.value = '';
+    if(!v || !ready) return;
+    row('me', v, true);
+    const w = row('bot', '', true); w.querySelector('.tx').classList.add('cur');
+    tm = setTimeout(() => { const t = w.querySelector('.tx'); t.classList.remove('cur'); t.textContent = eliza.transform(v); w.scrollIntoView({block: 'nearest', behavior: 'smooth'}); }, 800 + Math.random()*600);
+}
+function skip(){
+    if(done) return; done = true; [t1, t2, t3].forEach(clearTimeout);
+    $('#splash').style.display = 'none'; const c = $('#content'); c.hidden = false; c.classList.add('go', 'fast');
+    if(!ready) restart(true);
+}
+function intro(){
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches){ skip(); return; }
+    t1 = setTimeout(() => $('#splash').classList.add('out'), 2100);
+    t2 = setTimeout(() => { $('#splash').style.display = 'none'; const c = $('#content'); c.hidden = false; c.classList.add('go'); }, 2600);
+    t3 = setTimeout(() => { done = true; restart(true); }, 6100);
+}
+window.onload = () => {
+    document.querySelectorAll('[data-logo]').forEach(e => e.innerHTML = SH);
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches) document.querySelectorAll('.sh path').forEach(p => p.setAttribute('d', pathOf(BP, 0)));
+    else requestAnimationFrame(frame);
+    $('#term').addEventListener('click', e => { if(!e.target.closest('.tools')) skip(); });
+    intro();
+};
+</script>
+</head>
+<body>
+<main>
+  <div class="term" id="term">
+    <div class="tools"><button type="button" onclick="zoom(1)">[+Aa]</button><button type="button" onclick="zoom(-1)">[-Aa]</button></div>
+    <div id="splash"><span class="splogo" data-logo aria-hidden="true"></span><p>PROYECTO ELIZA</p></div>
+    <div id="content" hidden>
+      <div class="rule r1" aria-hidden="true">============================================================================================================================================</div>
+      <pre class="banner" aria-label="ELIZA"><span>EEEEEE  LL      IIII  ZZZZZZZ   AAAAA</span><span>EE      LL       II       ZZ   AA   AA</span><span>EEEEE   LL       II      ZZZ   AAAAAAA</span><span>EE      LL       II     ZZ     AA   AA</span><span>EEEEEE  LLLLLL  IIII  ZZZZZZZ  AA   AA</span></pre>
+      <div class="rule r2" aria-hidden="true">============================================================================================================================================</div>
+      <div class="info"><span class="il">ELIZA es la parodia de una psicoterapeuta rogeriana.</span><span class="il">El programa original lo escribió Joseph Weizenbaum en 1966.</span><span class="il">Esta implementación es de Norbert Landsteiner (mass:werk), 2005.</span><span class="il">Traducida y ampliada al español para el Proyecto ELIZA.</span></div>
+      <div id="log" aria-live="polite"></div>
+    </div>
+  </div>
+  <form class="bar" onsubmit="send(event)">
+    <input id="in" type="text" autocomplete="off" aria-label="Tu mensaje">
+    <button>Hablar</button><button type="button" onclick="restart(false)">Reiniciar</button>
+  </form>
+
+  <section class="doc">
+    <p>ELIZA es un chatbot escrito en 1966 por Joseph Weizenbaum que parodia a un psicoterapeuta rogeriano. Funciona, en buena parte, respondiendo al paciente con preguntas que salen de reformular sus propias afirmaciones. Así, a la frase «Me duele la cabeza» el programa puede contestar «¿Por qué dices que te duele la cabeza?», y a «Mi madre me odia» podría responder «¿Quién más en tu familia te odia?». No entiende nada: solo simula escuchar.</p>
+    <p>Weizenbaum la desarrolló en el MIT entre 1964 y 1966. Quería mostrar lo superficial que puede ser la comunicación entre una persona y una máquina, pero muchos usuarios le atribuyeron comprensión y empatía, un fenómeno que hoy se conoce como efecto ELIZA. Eligió la entrevista rogeriana porque en ella el terapeuta puede no saber nada del mundo sin que resulte extraño.</p>
+    <p>Por dentro no hay inteligencia: hay un guion con palabras clave, patrones y respuestas. Por eso es tan limitada: no recuerda la conversación completa, no capta el sentido y puede fallar con frases que ninguna regla prevé. No da consejos y no sustituye a una profesional de la salud mental.</p>
+    <blockquote>La versión de mass:werk, elizabot.js (Norbert Landsteiner, 2005), corre completa en tu navegador, sin servidor. El motor busca palabras clave y cada una tiene un rango: gana la más importante. Una regla de descomposición parte la frase, una de reensamblado arma la respuesta y los pronombres se invierten (yo→tú, mi→tu). Si no reconoce nada, usa una frase neutra o retoma algo dicho antes. Todas esas reglas viven en un guion separado del motor; aquí el guion está ampliado y en español, pero el motor es el mismo.</blockquote>
+    <p>Este proyecto usa ese mismo motor con un guion ampliado y traducido al español, dentro de una interfaz inspirada en las terminales de los años setenta y ochenta.</p>
+  </section>
+</main>
+<footer>
+  <div class="brand"><span data-logo aria-hidden="true"></span><span>PROYECTO ELIZA</span></div>
+  <nav class="links"><a href="https://proyectoeliza.js.org/">[Principal]</a><a href="https://proyectoeliza.js.org/acerca-de-eliza/">[Acerca de Eliza]</a><a href="mailto:aysermeno@outlook.com">[Contacto]</a></nav>
+</footer>
+</body>
+</html>
