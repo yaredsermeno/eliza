@@ -680,13 +680,13 @@ body {
 </footer>
 
 <script>
-/* Logo */
+/* Logo — animación completa Kiki ↔ Bouba */
 const SH = '<svg class="sh" viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor"/></svg>';
 const PA = [-135,-72,-20,34,93,153].map(d=>d*Math.PI/180);
 const PL = [40.3,45.2,45.7,42.2,41.3,42.5];
-const CR=38, PW=[.2,.19,.21,.2,.18,.21], BEND=.5;
-const lerp=(a,b,k)=>[a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k];
-const pt=p=>p[0].toFixed(1)+' '+p[1].toFixed(1);
+const CR = 38, PW = [.2,.19,.21,.2,.18,.21], BEND = .5;
+const lerp = (a,b,k) => [a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k];
+const pt = p => p[0].toFixed(1)+' '+p[1].toFixed(1);
 function petal(i,side){
   const a=PA[i],L=PL[i],w=L*PW[i],u=[Math.cos(a),Math.sin(a)],v=[-u[1],u[0]];
   const q=(x,y)=>{y+=BEND*x*x;return[50+u[0]*x*L+v[0]*y*w,50+u[1]*x*L+v[1]*y*w];};
@@ -697,26 +697,49 @@ function arc(s,e){
   const h=4/3*Math.tan((e-s)/4)*CR;
   return[P0,[P0[0]-h*Math.sin(s),P0[1]+h*Math.cos(s)],[P1[0]+h*Math.sin(e),P1[1]-h*Math.cos(e)],P1];
 }
-function shapePath(m){
+function pathOf(pairs,m){
   let d='';
-  for(let i=0;i<6;i++){
-    const prev=i?PA[i-1]:PA[5]-Math.PI*2,next=i<5?PA[i+1]:PA[0]+Math.PI*2;
-    const vs=(prev+PA[i])/2,ve=(PA[i]+next)/2;
-    [[petal(i,0),arc(vs,PA[i])],[petal(i,1),arc(PA[i],ve)]].forEach(([f,c],j)=>{
-      const g=f.map((p,k)=>lerp(p,c[k],m));
-      if(!i&&!j)d+='M'+pt(g[0]);
-      d+='C'+pt(g[1])+' '+pt(g[2])+' '+pt(g[3]);
-    });
-  }
+  pairs.forEach(([f,c],j)=>{
+    const g=f.map((p,k)=>lerp(p,c[k],m));
+    if(!j)d+='M'+pt(g[0]);
+    d+='C'+pt(g[1])+' '+pt(g[2])+' '+pt(g[3]);
+  });
   return d+'Z';
 }
+function boubaPairs(){
+  const out=[];
+  for(let i=0;i<6;i++){
+    const prev=i?PA[i-1]:PA[5]-Math.PI*2,next=i<5?PA[i+1]:PA[0]+Math.PI*2;
+    out.push([petal(i,0),arc((prev+PA[i])/2,PA[i])],[petal(i,1),arc(PA[i],(PA[i]+next)/2)]);
+  }
+  return out;
+}
+/* Kiki: estrella irregular de doce vértices */
+const KA = [-89.7,-50,-32.4,7,32.5,60,94.6,122.5,151.1,163.4,209.3,219.4].map(d=>d*Math.PI/180);
+const KR = [44.4,15.7,43.1,27.7,46,14.4,43.5,17.8,44,21.3,41.8,15.4];
+function kikiPairs(){
+  const P=KA.map((a,i)=>[50+KR[i]*Math.cos(a),50+KR[i]*Math.sin(a)]);
+  return P.map((p,i)=>{
+    const q=P[(i+1)%12],e=i<11?KA[i+1]:KA[0]+Math.PI*2;
+    return [[p,lerp(p,q,1/3),lerp(p,q,2/3),q],arc(KA[i],e)];
+  });
+}
+const BP=boubaPairs(), KP=kikiPairs();
 const ease=x=>x*x*(3-2*x);
 const bloom=x=>{const c=1.9,t=x-1;return 1+(c+1)*t*t*t+c*t*t;};
-function draw(p,m){p.setAttribute('d',shapePath(m));p.setAttribute('transform','rotate('+(-m*40)+' 50 50)');}
 function frame(t){
-  const u=(t/1000)%8;
-  const m=u<3.5?0:u<4.7?ease((u-3.5)/1.2):u<5.4?1:u<6.8?1-bloom((u-5.4)/1.4):0;
-  document.querySelectorAll('.sh path').forEach(p=>draw(p,m));
+  const u=(t/1000)%12.4;
+  let P=BP,m=0;
+  if(u<2)m=0;
+  else if(u<3.2)m=ease((u-2)/1.2);
+  else if(u<3.7)m=1;
+  else if(u<4.9){P=KP;m=1-bloom((u-3.7)/1.2);}
+  else if(u<7.4){P=KP;m=0;}
+  else if(u<8.6){P=KP;m=ease((u-7.4)/1.2);}
+  else if(u<9.1){P=KP;m=1;}
+  else if(u<10.3)m=1-bloom((u-9.1)/1.2);
+  const d=pathOf(P,m),tr='rotate('+((P===BP?-40:40)*m)+' 50 50)';
+  document.querySelectorAll('.sh:not(.st):not(.ch) path').forEach(p=>{p.setAttribute('d',d);p.setAttribute('transform',tr);});
   requestAnimationFrame(frame);
 }
 
