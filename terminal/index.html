@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ELIZA - Terminal</title>
+<title>Terminal - Proyecto Eliza</title>
 <link rel="icon" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="elizabot.js"></script>
 <script src="espanol.js"></script>
+<script src="parry.js"></script>
 <style>
 :root{--ink:#111;--soft:#cfcfcf;--line:#333}
 *{box-sizing:border-box}
@@ -43,6 +44,9 @@ main{flex:1;width:100%;padding:28px 14px 24px}
 .go .il{animation:fi .3s forwards}
 .go .il:nth-child(1){animation-delay:1.90s}.go .il:nth-child(2){animation-delay:2.20s}.go .il:nth-child(3){animation-delay:2.50s}.go .il:nth-child(4){animation-delay:2.80s}
 .fast *{animation:none!important;opacity:1!important;clip-path:none!important}
+.mode-prompt{min-height:18em;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:1em}
+.mode-prompt .question{margin:0;font-weight:600}
+.mode-prompt .hint{margin:0;color:#666}
 .ln{display:flex;gap:1ch;margin:0 0 .5em}
 .pr{flex:none}
 .tx{white-space:pre-wrap;overflow-wrap:anywhere}
@@ -66,125 +70,337 @@ footer{border-top:1px solid var(--line);text-align:center;padding:2.4em 14px 2.8
 </style>
 <script>
 const SH = '<svg class="sh" viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor"/></svg>';
-        const ico = w => '<span class="mini"><svg class="sh ch" data-who="' + w + '" viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor"/></svg></span>';
-        const ELZ = ico('k') + '<strong>ELIZA:</strong> ';
-        const USR = ico('b') + '<strong>TÚ:</strong> ';
-        const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        const lerp = (a, b, k) => [a[0] + (b[0]-a[0])*k, a[1] + (b[1]-a[1])*k];
-        const pt = p => p[0].toFixed(1) + ' ' + p[1].toFixed(1);
-        const PA = [-135, -72, -20, 34, 93, 153].map(d => d*Math.PI/180);
-        const PL = [40.3, 45.2, 45.7, 42.2, 41.3, 42.5];
-        const CR = 38;
-        const PW = [.2, .19, .21, .2, .18, .21], BEND = .5;
-        function petal(i, side){
-            const a = PA[i], L = PL[i], w = L*PW[i], u = [Math.cos(a), Math.sin(a)], v = [-u[1], u[0]];
-            const q = (x, y) => { y += BEND*x*x; return [50 + u[0]*x*L + v[0]*y*w, 50 + u[1]*x*L + v[1]*y*w]; };
-            return side ? [q(1,0), q(1,1.35), q(.42,1.55), q(0,0)] : [q(0,0), q(.42,-1.55), q(1,-1.35), q(1,0)];
-        }
-        function arc(s, e){
-            const P0 = [50 + CR*Math.cos(s), 50 + CR*Math.sin(s)], P1 = [50 + CR*Math.cos(e), 50 + CR*Math.sin(e)];
-            const h = 4/3*Math.tan((e-s)/4)*CR;
-            return [P0, [P0[0] - h*Math.sin(s), P0[1] + h*Math.cos(s)], [P1[0] + h*Math.sin(e), P1[1] - h*Math.cos(e)], P1];
-        }
-        function pathOf(pairs, m){
-            let d = '';
-            pairs.forEach(([f, c], j) => {
-                const g = f.map((p, k) => lerp(p, c[k], m));
-                if(!j) d += 'M' + pt(g[0]);
-                d += 'C' + pt(g[1]) + ' ' + pt(g[2]) + ' ' + pt(g[3]);
-            });
-            return d + 'Z';
-        }
-        function boubaPairs(){
-            const out = [];
-            for(let i = 0; i < 6; i++){
-                const prev = i ? PA[i-1] : PA[5] - Math.PI*2, next = i < 5 ? PA[i+1] : PA[0] + Math.PI*2;
-                out.push([petal(i,0), arc((prev + PA[i])/2, PA[i])], [petal(i,1), arc(PA[i], (PA[i] + next)/2)]);
-            }
-            return out;
-        }
-        /* Kiki: estrella irregular de seis puntas (ángulos y radios tomados del dibujo), lados rectos */
-        const KA = [-89.7, -50, -32.4, 7, 32.5, 60, 94.6, 122.5, 151.1, 163.4, 209.3, 219.4].map(d => d*Math.PI/180);
-        const KR = [44.4, 15.7, 43.1, 27.7, 46, 14.4, 43.5, 17.8, 44, 21.3, 41.8, 15.4];
-        function kikiPairs(){
-            const P = KA.map((a, i) => [50 + KR[i]*Math.cos(a), 50 + KR[i]*Math.sin(a)]);
-            return P.map((p, i) => {
-                const q = P[(i+1) % 12], e = i < 11 ? KA[i+1] : KA[0] + Math.PI*2;
-                return [[p, lerp(p,q,1/3), lerp(p,q,2/3), q], arc(KA[i], e)];
-            });
-        }
-        const BP = boubaPairs(), KP = kikiPairs();
-        const shapePath = m => pathOf(BP, m);
-        const ease = x => x*x*(3-2*x);
-        const bloom = x => { const c = 1.9, t = x - 1; return 1 + (c+1)*t*t*t + c*t*t; };
-        function draw(p, m){ p.setAttribute('d', shapePath(m)); p.setAttribute('transform', 'rotate(' + (-m*40) + ' 50 50)'); }
-        function frame(t){
-            const u = (t/1000) % 12.4;
-            let P = BP, m = 0;
-            if(u < 2) m = 0;
-            else if(u < 3.2) m = ease((u-2)/1.2);                       // Bouba se cierra
-            else if(u < 3.7) m = 1;                                      // círculo
-            else if(u < 4.9){ P = KP; m = 1 - bloom((u-3.7)/1.2); }     // sale Kiki
-            else if(u < 7.4){ P = KP; m = 0; }
-            else if(u < 8.6){ P = KP; m = ease((u-7.4)/1.2); }          // Kiki se cierra
-            else if(u < 9.1){ P = KP; m = 1; }                           // círculo
-            else if(u < 10.3){ m = 1 - bloom((u-9.1)/1.2); }            // sale Bouba
-            const d = pathOf(P, m), tr = 'rotate(' + ((P === BP ? -40 : 40)*m) + ' 50 50)';
-            document.querySelectorAll('.sh:not(.st):not(.ch) path').forEach(p => { p.setAttribute('d', d); p.setAttribute('transform', tr); });
-            const own = v => v < 3.2 ? 0 : v < 4.2 ? ease(v-3.2) : v < 4.6 ? 1 : v < 5.8 ? 1 - bloom((v-4.6)/1.2) : 0;
-            const sec = t/1000, mb = own(sec % 6.4), mk = own((sec + 3.2) % 6.4);
-            const db = pathOf(BP, mb), dk = pathOf(KP, mk);
-            document.querySelectorAll('.sh.ch').forEach(svg => {
-                const k = svg.dataset.who === 'k', p = svg.querySelector('path');
-                p.setAttribute('d', k ? dk : db);
-                p.setAttribute('transform', 'rotate(' + ((k ? 40 : -40) * (k ? mk : mb)) + ' 50 50)');
-            });
-            requestAnimationFrame(frame);
-        }
+const ico = w => '<span class="mini"><svg class="sh ch" data-who="' + w + '" viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor"/></svg></span>';
+const ELZ = ico('k') + '<strong>ELIZA:</strong> ';
+const USR = ico('b') + '<strong>TÚ:</strong> ';
+const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const lerp = (a,b,k) => [a[0] + (b[0]-a[0])*k, a[1] + (b[1]-a[1])*k];
+const pt = p => p[0].toFixed(1) + ' ' + p[1].toFixed(1);
+const PA = [-135,-72,-20,34,93,153].map(d => d*Math.PI/180);
+const PL = [40.3,45.2,45.7,42.2,41.3,42.5];
+const CR = 38;
+const PW = [.2,.19,.21,.2,.18,.21], BEND = .5;
 
-        
+function petal(i,side){
+    const a=PA[i],L=PL[i],w=L*PW[i],u=[Math.cos(a),Math.sin(a)],v=[-u[1],u[0]];
+    const q=(x,y)=>{y+=BEND*x*x;return [50+u[0]*x*L+v[0]*y*w,50+u[1]*x*L+v[1]*y*w];};
+    return side ? [q(1,0),q(1,1.35),q(.42,1.55),q(0,0)]
+                 : [q(0,0),q(.42,-1.55),q(1,-1.35),q(1,0)];
+}
+function arc(s,e){
+    const P0=[50+CR*Math.cos(s),50+CR*Math.sin(s)],P1=[50+CR*Math.cos(e),50+CR*Math.sin(e)];
+    const h=4/3*Math.tan((e-s)/4)*CR;
+    return [P0,[P0[0]-h*Math.sin(s),P0[1]+h*Math.cos(s)],[P1[0]+h*Math.sin(e),P1[1]-h*Math.cos(e)],P1];
+}
+function pathOf(pairs,m){
+    let d='';
+    pairs.forEach(([f,c],j)=>{
+        const g=f.map((p,k)=>lerp(p,c[k],m));
+        if(!j)d+='M'+pt(g[0]);
+        d+='C'+pt(g[1])+' '+pt(g[2])+' '+pt(g[3]);
+    });
+    return d+'Z';
+}
+function boubaPairs(){
+    const out=[];
+    for(let i=0;i<6;i++){
+        const prev=i?PA[i-1]:PA[5]-Math.PI*2,next=i<5?PA[i+1]:PA[0]+Math.PI*2;
+        out.push([petal(i,0),arc((prev+PA[i])/2,PA[i])],
+                  [petal(i,1),arc(PA[i],(PA[i]+next)/2)]);
+    }
+    return out;
+}
+const KA=[-89.7,-50,-32.4,7,32.5,60,94.6,122.5,151.1,163.4,209.3,219.4].map(d=>d*Math.PI/180);
+const KR=[44.4,15.7,43.1,27.7,46,14.4,43.5,17.8,44,21.3,41.8,15.4];
+function kikiPairs(){
+    const P=KA.map((a,i)=>[50+KR[i]*Math.cos(a),50+KR[i]*Math.sin(a)]);
+    return P.map((p,i)=>{
+        const q=P[(i+1)%12],e=i<11?KA[i+1]:KA[0]+Math.PI*2;
+        return [[p,lerp(p,q,1/3),lerp(p,q,2/3),q],arc(KA[i],e)];
+    });
+}
+const BP=boubaPairs(),KP=kikiPairs();
+const shapePath=m=>pathOf(BP,m);
+const ease=x=>x*x*(3-2*x);
+const bloom=x=>{const c=1.9,t=x-1;return 1+(c+1)*t*t*t+c*t*t;};
+
+function frame(t){
+    const u=(t/1000)%12.4;
+    let P=BP,m=0;
+    if(u<2)m=0;
+    else if(u<3.2)m=ease((u-2)/1.2);
+    else if(u<3.7)m=1;
+    else if(u<4.9){P=KP;m=1-bloom((u-3.7)/1.2);}
+    else if(u<7.4){P=KP;m=0;}
+    else if(u<8.6){P=KP;m=ease((u-7.4)/1.2);}
+    else if(u<9.1){P=KP;m=1;}
+    else if(u<10.3)m=1-bloom((u-9.1)/1.2);
+
+    const d=pathOf(P,m),tr='rotate('+((P===BP?-40:40)*m)+' 50 50)';
+    document.querySelectorAll('.sh:not(.st):not(.ch) path').forEach(p=>{
+        p.setAttribute('d',d);p.setAttribute('transform',tr);
+    });
+
+    const own=v=>v<3.2?0:v<4.2?ease(v-3.2):v<4.6?1:v<5.8?1-bloom((v-4.6)/1.2):0;
+    const sec=t/1000,mb=own(sec%6.4),mk=own((sec+3.2)%6.4);
+    const db=pathOf(BP,mb),dk=pathOf(KP,mk);
+
+    document.querySelectorAll('.sh.ch').forEach(svg=>{
+        const k=svg.dataset.who==='k',p=svg.querySelector('path');
+        p.setAttribute('d',k?dk:db);
+        p.setAttribute('transform','rotate('+((k?40:-40)*(k?mk:mb))+' 50 50)');
+    });
+    requestAnimationFrame(frame);
+}
 
 const eliza = new ElizaBot();
 const $ = s => document.querySelector(s);
-const SZ = [9, 10, 11, 12, 13, 14, 16];
-let lvl = 2, rows = [], tm, ready = false, done = false, t1, t2, t3;
-function zoom(d){ lvl = Math.min(SZ.length-1, Math.max(0, lvl + d)); document.body.style.fontSize = SZ[lvl] + 'px'; }
-function row(who, text, scroll){
-    const d = document.createElement('div'); d.className = 'ln ' + who;
-    const p = document.createElement('span'); p.className = 'pr'; p.textContent = who === 'bot' ? 'ELIZA >' : 'TÚ    >';
-    const t = document.createElement('span'); t.className = 'tx'; t.textContent = text;
-    d.append(p, t); $('#log').append(d); rows.push(d);
-    if(scroll) d.scrollIntoView({block: 'nearest', behavior: 'smooth'});
+const SZ=[9,10,11,12,13,14,16];
+let lvl=2,rows=[],tm,ready=false,done=false,t1,t2,t3;
+let selectedBot=null;
+
+function zoom(d){
+    lvl=Math.min(SZ.length-1,Math.max(0,lvl+d));
+    document.body.style.fontSize=SZ[lvl]+'px';
+}
+
+function row(who,text,scroll){
+    const d=document.createElement('div');
+    d.className='ln '+who;
+    const p=document.createElement('span');
+    p.className='pr';
+    p.textContent=who==='bot'
+        ? (selectedBot==='parry'?'PARRY >':'ELIZA >')
+        : 'TÚ    >';
+    const t=document.createElement('span');
+    t.className='tx';
+    t.textContent=text;
+    d.append(p,t);
+    const log=$('#log');
+    if(log) log.append(d);
+    rows.push(d);
+    if(scroll)d.scrollIntoView({block:'nearest',behavior:'smooth'});
     return d;
 }
+
 function restart(first){
-    clearTimeout(tm); rows.forEach(r => r.remove()); rows = [];
-    eliza.reset(); row('bot', eliza.getInitial(), !first); ready = true;
+    clearTimeout(tm);
+    rows.forEach(r=>r.remove());
+    rows=[];
+    ready=false;
+
+    if(selectedBot==='parry'){
+        if(window.parry && typeof parry.reset==='function') parry.reset();
+        row('bot',window.parry&&typeof parry.getInitial==='function'
+            ? parry.getInitial()
+            : '¿Quién eres y por qué quieres hablar conmigo?',!first);
+    }else{
+        eliza.reset();
+        row('bot',eliza.getInitial(),!first);
+    }
+    ready=true;
 }
+
 function send(e){
     e.preventDefault();
-    const i = $('#in'), v = i.value.trim(); i.value = '';
-    if(!v || !ready) return;
-    row('me', v, true);
-    const w = row('bot', '', true); w.querySelector('.tx').classList.add('cur');
-    tm = setTimeout(() => { const t = w.querySelector('.tx'); t.classList.remove('cur'); t.textContent = eliza.transform(v); w.scrollIntoView({block: 'nearest', behavior: 'smooth'}); }, 800 + Math.random()*600);
+    const i=$('#in');
+    if(!i)return;
+
+    const v=i.value.trim();
+    i.value='';
+
+    if(!v || !ready || !selectedBot)return;
+
+    row('me',v,true);
+    const w=row('bot','',true);
+    const tx=w.querySelector('.tx');
+    tx.classList.add('cur');
+
+    tm=setTimeout(()=>{
+        tx.classList.remove('cur');
+        tx.textContent=selectedBot==='parry'
+            ? (window.parry ? parry.transform(v) : 'No se pudo cargar PARRY.')
+            : eliza.transform(v);
+        w.scrollIntoView({block:'nearest',behavior:'smooth'});
+    },800+Math.random()*600);
 }
-function skip(){
-    if(done) return; done = true; [t1, t2, t3].forEach(clearTimeout);
-    $('#splash').style.display = 'none'; const c = $('#content'); c.hidden = false; c.classList.add('go', 'fast');
-    if(!ready) restart(true);
+
+function skipIntro(){
+    clearTimeout(t1);clearTimeout(t2);clearTimeout(t3);
+    const splash=$('#splash'),content=$('#content');
+    if(!splash||!content)return;
+    done=true;
+    splash.style.display='none';
+    content.hidden=false;
+    content.classList.add('go','fast');
 }
+
 function intro(){
-    if(matchMedia('(prefers-reduced-motion: reduce)').matches){ skip(); return; }
-    t1 = setTimeout(() => $('#splash').classList.add('out'), 2100);
-    t2 = setTimeout(() => { $('#splash').style.display = 'none'; const c = $('#content'); c.hidden = false; c.classList.add('go'); }, 2600);
-    t3 = setTimeout(() => { done = true; restart(true); }, 6100);
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches){
+        setTimeout(()=>{
+            const selector=$('#bot-selector');
+            if(selector){
+                selector.style.display='block';
+                selector.style.opacity='1';
+            }
+        },300);
+        return;
+    }
+
+    // Solo anima el logo/texto. NO muestra todavía ELIZA/PARRY.
+    t1=setTimeout(()=>$('#splash')?.classList.add('out'),2100);
+
+    // Mantiene la pantalla de selección dentro del splash.
+    t2=setTimeout(()=>{
+        const splash=$('#splash');
+        if(splash)splash.classList.remove('out');
+    },2600);
+
+    t3=setTimeout(()=>{done=true;},6100);
 }
-window.onload = () => {
-    document.querySelectorAll('[data-logo]').forEach(e => e.innerHTML = SH);
-    if(matchMedia('(prefers-reduced-motion: reduce)').matches) document.querySelectorAll('.sh path').forEach(p => p.setAttribute('d', pathOf(BP, 0)));
-    else requestAnimationFrame(frame);
-    $('#term').addEventListener('click', e => { if(!e.target.closest('.tools')) skip(); });
+
+function showSelector(){
+    const splash=$('#splash');
+    if(!splash)return;
+
+    const old=$('#bot-selector');
+    if(old)old.remove();
+
+    const selector=document.createElement('div');
+    selector.id='bot-selector';
+    selector.style.margin='0';
+    selector.style.letterSpacing='.08em';
+    selector.style.fontWeight='600';
+    selector.style.textAlign='center';
+    selector.style.opacity='0';
+    selector.style.display='none';
+
+    const question=document.createElement('div');
+    question.textContent='¿A cuál deseas usar?';
+    question.style.marginBottom='1em';
+
+    const choices=document.createElement('div');
+    choices.style.display='flex';
+    choices.style.justifyContent='center';
+    choices.style.gap='2em';
+    choices.style.flexWrap='wrap';
+
+    const makeChoice=(name,bot)=>{
+        const button=document.createElement('button');
+        button.type='button';
+        button.textContent='[ '+name+' ]';
+        button.style.font='inherit';
+        button.style.fontWeight='600';
+        button.style.background='none';
+        button.style.border='0';
+        button.style.padding='.2em .4em';
+        button.style.color='inherit';
+        button.style.cursor='pointer';
+
+        button.addEventListener('mouseenter',()=>{
+            button.style.textDecoration='underline';
+        });
+        button.addEventListener('mouseleave',()=>{
+            button.style.textDecoration='none';
+        });
+
+        button.addEventListener('click',()=>{
+            if(selectedBot)return;
+            selectedBot=bot;
+            startSelectedBot();
+        });
+
+        return button;
+    };
+
+    choices.append(
+        makeChoice('ELIZA','eliza'),
+        makeChoice('PARRY','parry')
+    );
+
+    selector.append(question,choices);
+    splash.appendChild(selector);
+
+    const revealSelector=()=>{
+        if(selectedBot)return;
+        selector.style.display='block';
+        selector.style.opacity='1';
+    };
+
+    // La pregunta aparece SOLO después de terminar la animación inicial.
+    setTimeout(revealSelector,6100);
+}
+
+function startSelectedBot(){
+    clearTimeout(t1);clearTimeout(t2);clearTimeout(t3);
+
+    const splash=$('#splash'),content=$('#content');
+    if(!splash||!content)return;
+
+    splash.classList.add('out');
+
+    setTimeout(()=>{
+        splash.style.display='none';
+        content.hidden=false;
+        content.classList.add('go','fast');
+
+        const banner=document.querySelector('.banner');
+        const info=document.querySelector('.info');
+
+        if(selectedBot==='parry'){
+            if(banner){
+                banner.setAttribute('aria-label','PARRY');
+                banner.innerHTML=
+                    '<span>PPPPPP   AAA   RRRRR   RRRRR   Y   Y</span>'+
+                    '<span>P     P A   A  R    R  R    R   Y Y </span>'+
+                    '<span>PPPPPP  AAAAA  RRRRR   RRRRR     Y  </span>'+
+                    '<span>P       A   A  R  R    R  R      Y  </span>'+
+                    '<span>P       A   A  R   RR  R   RR    Y  </span>';
+            }
+
+            if(info){
+                info.innerHTML=
+                    '<span class="il">PARRY es un chatbot histórico creado por Kenneth Colby en 1972.</span>'+
+                    '<span class="il">Intentaba simular una personalidad paranoide mediante reglas y un estado interno.</span>'+
+                    '<span class="il">Esta página implementa una recreación propia inspirada en esos conceptos.</span>'+
+                    '<span class="il">No es una reproducción del código histórico original.</span>';
+            }
+        }else{
+            if(banner){
+                banner.setAttribute('aria-label','ELIZA');
+                banner.innerHTML=
+                    '<span>EEEEEE  LL      IIII  ZZZZZZZ   AAAAA</span>'+
+                    '<span>EE      LL       II       ZZ   AA   AA</span>'+
+                    '<span>EEEEE   LL       II      ZZZ   AAAAAAA</span>'+
+                    '<span>EE      LL       II     ZZ     AA   AA</span>'+
+                    '<span>EEEEEE  LLLLLL  IIII  ZZZZZZZ  AA   AA</span>';
+            }
+
+            if(info){
+                info.innerHTML=
+                    '<span class="il">ELIZA es la parodia de una psicoterapeuta rogeriana.</span>'+
+                    '<span class="il">El programa original lo escribió Joseph Weizenbaum en 1966.</span>'+
+                    '<span class="il">Esta implementación es de Norbert Landsteiner (mass:werk), 2005.</span>'+
+                    '<span class="il">Traducida y ampliada al español para el Proyecto ELIZA.</span>';
+            }
+        }
+
+        restart(false);
+    },450);
+}
+
+window.onload=()=>{
+    document.querySelectorAll('[data-logo]').forEach(e=>e.innerHTML=SH);
+
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches){
+        document.querySelectorAll('.sh path').forEach(p=>p.setAttribute('d',pathOf(BP,0)));
+    }else{
+        requestAnimationFrame(frame);
+    }
+
+    // La animación no se puede saltar haciendo clic: primero aparece
+    // la pregunta y después se espera X o Y.
+    showSelector();
     intro();
 };
 </script>
@@ -196,15 +412,15 @@ window.onload = () => {
     <div id="splash"><span class="splogo" data-logo aria-hidden="true"></span><p>PROYECTO ELIZA</p></div>
     <div id="content" hidden>
       <div class="rule r1" aria-hidden="true">============================================================================================================================================</div>
-      <pre class="banner" aria-label="ELIZA"><span>EEEEEE  LL      IIII  ZZZZZZZ   AAAAA</span><span>EE      LL       II       ZZ   AA   AA</span><span>EEEEE   LL       II      ZZZ   AAAAAAA</span><span>EE      LL       II     ZZ     AA   AA</span><span>EEEEEE  LLLLLL  IIII  ZZZZZZZ  AA   AA</span></pre>
+      <pre class="banner" id="banner" aria-label="ELIZA"><span>EEEEEE  LL      IIII  ZZZZZZZ   AAAAA</span><span>EE      LL       II       ZZ   AA   AA</span><span>EEEEE   LL       II      ZZZ   AAAAAAA</span><span>EE      LL       II     ZZ     AA   AA</span><span>EEEEEE  LLLLLL  IIII  ZZZZZZZ  AA   AA</span></pre>
       <div class="rule r2" aria-hidden="true">============================================================================================================================================</div>
-      <div class="info"><span class="il">ELIZA es la parodia de una psicoterapeuta rogeriana.</span><span class="il">El programa original lo escribió Joseph Weizenbaum en 1966.</span><span class="il">Esta implementación es de Norbert Landsteiner (mass:werk), 2005.</span><span class="il">Traducida y ampliada al español para el Proyecto ELIZA.</span></div>
+      <div class="info" id="engineInfo"><span class="il">ELIZA es la parodia de una psicoterapeuta rogeriana.</span><span class="il">El programa original lo escribió Joseph Weizenbaum en 1966.</span><span class="il">Esta implementación es de Norbert Landsteiner (mass:werk), 2005.</span><span class="il">Traducida y ampliada al español para el Proyecto ELIZA.</span></div>
       <div id="log" aria-live="polite"></div>
     </div>
   </div>
   <form class="bar" onsubmit="send(event)">
     <input id="in" type="text" autocomplete="off" aria-label="Tu mensaje">
-    <button>Hablar</button><button type="button" onclick="restart(false)">Reiniciar</button>
+    <button type="submit">Hablar</button><button type="button" onclick="restart(false)">Reiniciar</button>
   </form>
 
   <section class="doc">
@@ -213,6 +429,13 @@ window.onload = () => {
     <p>Por dentro no hay inteligencia: hay un guion con palabras clave, patrones y respuestas. Por eso es tan limitada: no recuerda la conversación completa, no capta el sentido y puede fallar con frases que ninguna regla prevé. No da consejos y no sustituye a una profesional de la salud mental.</p>
     <blockquote>La versión de mass:werk, elizabot.js (Norbert Landsteiner, 2005), corre completa en tu navegador, sin servidor. El motor busca palabras clave y cada una tiene un rango: gana la más importante. Una regla de descomposición parte la frase, una de reensamblado arma la respuesta y los pronombres se invierten (yo→tú, mi→tu). Si no reconoce nada, usa una frase neutra o retoma algo dicho antes. Todas esas reglas viven en un guion separado del motor; aquí el guion está ampliado y en español, pero el motor es el mismo.</blockquote>
     <p>Este proyecto usa ese mismo motor con un guion ampliado y traducido al español, dentro de una interfaz inspirada en las terminales de los años setenta y ochenta.</p>
+   <p><strong>PARRY</strong> fue creado por Kenneth Colby en 1972 como un programa conversacional que simulaba una personalidad paranoide mediante reglas, creencias y estados internos. A diferencia de ELIZA, su diseño intentaba conservar información sobre el estado del personaje para influir en respuestas posteriores.</p>
+   <p>La opción PARRY de esta página implementa una <strong>versión propia</strong> inspirada en esos principios históricos. No es el código original de PARRY ni una reconstrucción exacta: es una recreación con el fin de simplemente entrener, hecha para este proyecto, con variables de sospecha, amenaza, confianza y creencias que modifican la conversación. Es de mencionar que en la página PARRY solo puede ser utilizado en este espacio.</p>
+
+    <p>En su funcionamiento, ELIZA no interpreta el significado de una conversación como lo haría un sistema moderno: el motor de mass:werk compara la entrada con patrones definidos en el guion, da prioridad a las palabras clave con mayor rango y utiliza reglas de descomposición y reensamblado para producir la respuesta. También puede transformar determinados pronombres para que una frase del usuario pueda convertirse en una respuesta con apariencia de diálogo.</p>
+    <p>El guion es el que determina qué temas reconoce ELIZA y qué formas de respuesta puede construir; el motor se ocupa de procesar esas reglas. Por ello, ampliar el guion permite aumentar considerablemente la variedad de respuestas sin cambiar el funcionamiento fundamental del motor utilizado en esta página.</p>
+    <p>En el caso de <strong>PARRY</strong>, la conversación se construye alrededor de un mecanismo diferente. La implementación mantiene variables que representan estados como sospecha, confianza, tensión, miedo, hostilidad y evasividad, además de conceptos relacionados con temas que aparecen durante la conversación. Cuando el usuario menciona determinados asuntos, esos valores pueden cambiar y afectar las respuestas posteriores.</p>
+    <p>De esta manera, PARRY no depende únicamente de encontrar una palabra y devolver una frase asociada: el estado acumulado de la conversación puede hacer que una misma clase de pregunta reciba respuestas diferentes. La implementación también conserva algunos elementos de la conversación reciente y utiliza los temas detectados para mantener una actitud más consistente durante el intercambio.</p>
   </section>
 </main>
 <footer>
