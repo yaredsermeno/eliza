@@ -23,6 +23,11 @@ main{flex:1;width:100%;padding:28px 14px 24px}
 .tools{display:flex;justify-content:flex-end;gap:1em;margin-bottom:.4em}
 .tools button{background:none;border:0;padding:0;color:#666;font:inherit;cursor:pointer}
 .tools button:hover{color:#000;text-decoration:underline}
+.term.dark{background:#000;color:var(--soft);border-color:#666}
+.term.dark .tools button{color:#999}
+.term.dark .tools button:hover{color:#fff}
+.term.dark .mode-prompt .hint{color:#999}
+.term.dark .doc blockquote::before{color:#999}
 #splash{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2em;min-height:18em;transition:opacity .45s}
 #splash.out{opacity:0}
 .splogo .sh{width:3.6em;height:3.6em;animation:pop .8s cubic-bezier(.2,1.4,.4,1) both}
@@ -162,6 +167,13 @@ let selectedBot=null;
 function zoom(d){
     lvl=Math.min(SZ.length-1,Math.max(0,lvl+d));
     document.body.style.fontSize=SZ[lvl]+'px';
+}
+
+function toggleMode(){
+    const t=$('#term'),b=$('#modeBtn');
+    const dark=t.classList.toggle('dark');
+    b.textContent=dark?'[m:c]':'[m:o]';
+    b.setAttribute('aria-label',dark?'Cambiar a modo claro':'Cambiar a modo oscuro');
 }
 
 function row(who,text,scroll){
@@ -408,7 +420,7 @@ window.onload=()=>{
 <body>
 <main>
   <div class="term" id="term">
-    <div class="tools"><button type="button" onclick="zoom(1)">[+Aa]</button><button type="button" onclick="zoom(-1)">[-Aa]</button></div>
+    <div class="tools"><button type="button" onclick="zoom(1)">[+Aa]</button><button type="button" onclick="zoom(-1)">[-Aa]</button><button type="button" id="modeBtn" onclick="toggleMode()" aria-label="Cambiar a modo oscuro">[m:o]</button></div>
     <div id="splash"><span class="splogo" data-logo aria-hidden="true"></span><p>PROYECTO ELIZA</p></div>
     <div id="content" hidden>
       <div class="rule r1" aria-hidden="true">============================================================================================================================================</div>
