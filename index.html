@@ -85,15 +85,19 @@
         .dropdown-content {
             display: none;
             position: absolute;
+            top: 100%;
+            left: 0;
             background: var(--bg);
             border: 1px solid var(--border);
             min-width: 220px;
-            max-width: calc(100vw - 16px);
-            max-height: 60vh;
+            max-width: calc(100vw - 20px);
+            max-height: 280px;
             overflow-y: auto;
             margin-top: 2px;
-            z-index: 10;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            z-index: 30;
+            line-height: 1.7;
+            white-space: normal;
+            box-shadow: 0 2px 6px rgba(0,0,0,.15);
         }
 
         .dropdown-content a {
@@ -255,11 +259,12 @@
                 font-size: 12px;
             }
 
-            /* el menú se ancla a la barra (no al botón) y nunca se sale de la pantalla */
-            .menu { position: static; }
+            /* igual que Acerca de Eliza: el cuadro cuelga de su opción; el JS lo mantiene dentro de la pantalla */
+            .menu { position: relative; }
             .dropdown-content {
-                left: 8px; right: 8px; top: 100%;
-                min-width: 0; max-width: none; margin-top: 0;
+                line-height: 1.4;
+                min-width: min(220px, calc(100vw - 20px));
+                max-width: calc(100vw - 20px);
             }
 
             .menu {
@@ -551,6 +556,11 @@
             document.querySelectorAll('.dropdown-content').forEach(o => {
                 if(o !== m) o.style.display = 'none';
             });
+            m.style.left = '';
+            if(m.style.display === 'block'){
+                const over = m.getBoundingClientRect().right - (document.documentElement.clientWidth - 10);
+                if(over > 0) m.style.left = (-over) + 'px';
+            }
         }
 
         window.onclick = e => {
