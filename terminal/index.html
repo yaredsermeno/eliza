@@ -41,14 +41,18 @@ main{flex:1;width:100%;padding:28px 14px 24px}
 .il{display:block}
 #content .rule,#content .banner span,#content .il{opacity:0}
 @keyframes fi{to{opacity:1}}
-@keyframes rv{from{opacity:1;clip-path:inset(0 100% 0 0)}to{opacity:1;clip-path:inset(0 0 0 0)}}
-.go .rule.r1{animation:fi .3s forwards}
-.go .banner span{animation:rv .45s steps(38) forwards}
-.go .banner span:nth-child(1){animation-delay:0.30s}.go .banner span:nth-child(2){animation-delay:0.50s}.go .banner span:nth-child(3){animation-delay:0.70s}.go .banner span:nth-child(4){animation-delay:0.90s}.go .banner span:nth-child(5){animation-delay:1.10s}
-.go .rule.r2{animation:fi .3s 1.5s forwards}
-.go .il{animation:fi .3s forwards}
-.go .il:nth-child(1){animation-delay:1.90s}.go .il:nth-child(2){animation-delay:2.20s}.go .il:nth-child(3){animation-delay:2.50s}.go .il:nth-child(4){animation-delay:2.80s}
-.fast *{animation:none!important;opacity:1!important;clip-path:none!important}
+@keyframes terminalType{from{opacity:1;clip-path:inset(0 100% 0 0)}to{opacity:1;clip-path:inset(0 0 0 0)}}
+.go .rule.r1{animation:fi .25s forwards}
+.go .banner span{opacity:1;clip-path:inset(0 100% 0 0)}
+.go.typing .banner span{animation:terminalType var(--type-duration,.7s) steps(var(--type-steps,38),end) forwards}
+.go .rule.r2{animation:fi .25s forwards}
+.go .il{opacity:1;clip-path:inset(0 100% 0 0)}
+.go.typing .il{animation:terminalType var(--type-duration,1.2s) steps(var(--type-steps,80),end) forwards}
+#log .typing-line .tx{display:inline-block;opacity:1;white-space:pre-wrap;overflow:hidden;vertical-align:bottom;clip-path:inset(0 100% 0 0)}
+#log .typing-line .tx.is-typing{animation:terminalType var(--type-duration,1.4s) steps(var(--type-steps,80),end) forwards}
+.reduced-motion .go.typing .banner span,
+.reduced-motion .go.typing .il,
+.reduced-motion #log .typing-line .tx.is-typing{animation:none!important;clip-path:none!important}
 .mode-prompt{min-height:18em;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:1em}
 .mode-prompt .question{margin:0;font-weight:600}
 .mode-prompt .hint{margin:0;color:#666}
@@ -195,22 +199,91 @@ function row(who,text,scroll){
     return d;
 }
 
-function restart(first){
+function revealInitialGreeting(text){
+    const w=row('bot','',false);
+    w.classList.add('initial-greeting');
+    const tx=w.querySelector('.tx');
+
+    // The greeting is the final stage: it is invisible until the
+    // header + information have finished revealing, then types normally.
+    tx.textContent='';
+    tx.classList.add('cur');
+
+    let i=0;
+    const type=()=>{
+        if(i>=text.length){
+            clearInterval(w._greetTimer);
+            w._greetTimer=null;
+            tx.classList.remove('cur');
+            ready=true;
+            w.scrollIntoView({block:'nearest',behavior:'smooth'});
+            return;
+        }
+        tx.textContent += text.charAt(i++);
+    };
+
+    w.style.opacity='1';
+    type();
+    w._greetTimer=setInterval(type,24);
+    return w;
+}
+
+function typeInto(el,text,done){
+    if(!el)return;
+    clearInterval(el._typeTimer);
+    el.textContent='';
+    el.classList.add('cur');
+
+    let i=0;
+    const step=()=>{
+        if(i>=text.length){
+            clearInterval(el._typeTimer);
+            el._typeTimer=null;
+            el.classList.remove('cur');
+            if(done)done();
+            return;
+        }
+        el.textContent += text.charAt(i++);
+    };
+
+    step();
+    el._typeTimer=setInterval(step,24);
+}
+
+function restart(first, staged=true){
     clearTimeout(tm);
-    rows.forEach(r=>r.remove());
+    rows.forEach(r=>{
+        clearInterval(r._greetTimer);
+        r.remove();
+    });
     rows=[];
     ready=false;
 
+    let initial='';
     if(selectedBot==='parry'){
         if(window.parry && typeof parry.reset==='function') parry.reset();
-        row('bot',window.parry&&typeof parry.getInitial==='function'
+        initial=window.parry&&typeof parry.getInitial==='function'
             ? parry.getInitial()
-            : '¿Quién eres y por qué quieres hablar conmigo?',!first);
+            : '¿Quién eres y por qué quieres hablar conmigo?';
     }else{
         eliza.reset();
-        row('bot',eliza.getInitial(),!first);
+        initial=eliza.getInitial();
     }
-    ready=true;
+
+    if(staged){
+        // The initial greeting is deliberately delayed until the
+        // top-to-bottom interface reveal has completed.
+        tm=setTimeout(()=>{
+            revealInitialGreeting(initial);
+        },3400);
+    }else{
+        const w=row('bot','',!first);
+        const tx=w.querySelector('.tx');
+        typeInto(tx,initial,()=>{
+            ready=true;
+            w.scrollIntoView({block:'nearest',behavior:'smooth'});
+        });
+    }
 }
 
 function send(e){
@@ -244,7 +317,7 @@ function skipIntro(){
     done=true;
     splash.style.display='none';
     content.hidden=false;
-    content.classList.add('go','fast');
+    content.classList.add('go');
 }
 
 function intro(){
@@ -343,6 +416,53 @@ function showSelector(){
     setTimeout(revealSelector,6100);
 }
 
+function animateTerminalIntro(){
+    const content=$('#content');
+    if(!content)return 0;
+
+    content.classList.remove('fast');
+    content.classList.add('go','typing');
+
+    const banner=content.querySelector('.banner');
+    const lines=banner ? [...banner.querySelectorAll('span')] : [];
+    const info=content.querySelector('.info');
+    const infos=info ? [...info.querySelectorAll('.il')] : [];
+
+    // Cada línea se escribe como en una terminal, carácter por carácter.
+    let delay=180;
+    const typeLine=(el)=>{
+        const text=el.textContent;
+        const chars=Math.max(1,text.length);
+        el.style.setProperty('--type-steps',chars);
+        el.style.setProperty('--type-duration',
+            Math.max(.45,Math.min(1.8,chars*.035))+'s');
+        el.style.animationDelay=delay+'ms';
+        delay += Math.max(260,Math.min(850,chars*35))+110;
+    };
+
+    lines.forEach(typeLine);
+    delay += 250;
+    infos.forEach(typeLine);
+
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+        content.classList.add('reduced-motion');
+    }
+    return delay;
+}
+
+function typeFirstBotMessage(node){
+    if(!node)return;
+    const tx=node.querySelector('.tx');
+    if(!tx || !tx.textContent)return;
+
+    const chars=Math.max(1,tx.textContent.length);
+    tx.style.setProperty('--type-steps',chars);
+    tx.style.setProperty('--type-duration',
+        Math.max(.7,Math.min(2.4,chars*.045))+'s');
+    tx.classList.add('is-typing');
+    node.classList.add('typing-line');
+}
+
 function startSelectedBot(){
     clearTimeout(t1);clearTimeout(t2);clearTimeout(t3);
 
@@ -354,7 +474,7 @@ function startSelectedBot(){
     setTimeout(()=>{
         splash.style.display='none';
         content.hidden=false;
-        content.classList.add('go','fast');
+        content.classList.add('go');
 
         const banner=document.querySelector('.banner');
         const info=document.querySelector('.info');
@@ -397,7 +517,14 @@ function startSelectedBot(){
             }
         }
 
+        // Primero aparece la interfaz y después se escribe el saludo inicial.
+        const typingDuration=animateTerminalIntro();
         restart(false);
+
+        const firstMessage=document.querySelector('#log .bot:last-child');
+        if(firstMessage){
+            setTimeout(()=>typeFirstBotMessage(firstMessage),typingDuration+180);
+        }
     },450);
 }
 
