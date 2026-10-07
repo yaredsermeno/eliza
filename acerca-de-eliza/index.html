@@ -7,14 +7,14 @@
 <link rel="icon" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&family=DM+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;700&family=Lexend:wght@400;600&family=Lora:wght@400;700&family=Martian+Mono:wght@400;700&family=Merriweather:wght@400;700&family=Montserrat:wght@400;600&family=Nunito+Sans:wght@400;600&family=Source+Sans+3:wght@400;600&family=Work+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&family=Bytesized&family=DM+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;700&family=Lexend:wght@400;600&family=Lora:wght@400;700&family=Martian+Mono:wght@400;700&family=Merriweather:wght@400;700&family=Montserrat:wght@400;600&family=Nunito+Sans:wght@400;600&family=Source+Sans+3:wght@400;600&family=Work+Sans:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{--mono:'Martian Mono',monospace;--fs:17px;--bg:#F6F4EF;--text:#1A1A1C;--border:#1A1A1C;--hover:#E6E2D8;--code:color-mix(in srgb,var(--text) 7%,var(--bg))}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
 ::selection{background:var(--text);color:var(--bg)}
 body{margin:0;font-family:var(--mono);font-size:var(--fs);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;line-height:1.7}
 .menubar{border-bottom:1px solid var(--border);padding:4px 16px;display:flex;gap:24px;font-size:13px;height:28px;align-items:center;position:sticky;top:0;background:var(--bg);z-index:20}
-.barlogo{display:flex}.barlogo .sh{width:22px;height:22px}.sh{width:1em;height:1em;overflow:visible;flex:none}
+.barlogo{display:inline-flex;align-items:baseline;gap:0.05em;font-family:'Bytesized',monospace;font-size:19px;line-height:1;letter-spacing:0.05em;color:var(--text)}
 .menu{position:relative}.menu-item{cursor:pointer;padding:0 4px}
 .dropdown-content{display:none;position:absolute;background:var(--bg);border:1px solid var(--border);min-width:220px;max-height:280px;overflow-y:auto;margin-top:2px;z-index:30;box-shadow:0 2px 6px rgba(0,0,0,.15)}
 .dropdown-content a{display:block;padding:6px 12px;color:var(--text);text-decoration:none}
@@ -40,8 +40,8 @@ dt{font-weight:600;margin-top:.9em}dd{margin:0 0 0 1.2em}
 .download-btn{display:inline-block;padding:.8em 1.6em;color:var(--text);border:2px solid var(--border);text-decoration:none}
 .download-btn:hover{background:var(--hover)}
 .center{text-align:center}
-footer{text-align:center;padding:30px 20px 36px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:.7em}
-footer .sh{width:28px;height:28px}
+footer{text-align:center;padding:30px 20px 36px;border-top:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5em}
+footer .brand{font-family:'Bytesized',monospace;font-weight:400;font-size:1.55em;letter-spacing:0.08em;line-height:1}
 footer p{margin:0;opacity:.75;font-size:.95em;letter-spacing:.04em}
 @media(max-width:860px){
   .wrap{grid-template-columns:1fr;gap:20px}
@@ -191,73 +191,6 @@ const availableFonts = [
             { name: 'Lora',                  kind: 'serif' },
             { name: 'Merriweather',          kind: 'serif' }
         ];
-/* Símbolo Bouba: una flor de seis pétalos en gota que se cierra en círculo y vuelve a abrirse */
-        const SH = '<svg class="sh" viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor"/></svg>';
-        const ELZ = '<span class="mini">' + SH + '</span><strong>ELIZA:</strong> ';
-        const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        const lerp = (a, b, k) => [a[0] + (b[0]-a[0])*k, a[1] + (b[1]-a[1])*k];
-        const pt = p => p[0].toFixed(1) + ' ' + p[1].toFixed(1);
-        const PA = [-135, -72, -20, 34, 93, 153].map(d => d*Math.PI/180);
-        const PL = [40.3, 45.2, 45.7, 42.2, 41.3, 42.5];
-        const CR = 38;
-        const PW = [.2, .19, .21, .2, .18, .21], BEND = .5;
-        function petal(i, side){
-            const a = PA[i], L = PL[i], w = L*PW[i], u = [Math.cos(a), Math.sin(a)], v = [-u[1], u[0]];
-            const q = (x, y) => { y += BEND*x*x; return [50 + u[0]*x*L + v[0]*y*w, 50 + u[1]*x*L + v[1]*y*w]; };
-            return side ? [q(1,0), q(1,1.35), q(.42,1.55), q(0,0)] : [q(0,0), q(.42,-1.55), q(1,-1.35), q(1,0)];
-        }
-        function arc(s, e){
-            const P0 = [50 + CR*Math.cos(s), 50 + CR*Math.sin(s)], P1 = [50 + CR*Math.cos(e), 50 + CR*Math.sin(e)];
-            const h = 4/3*Math.tan((e-s)/4)*CR;
-            return [P0, [P0[0] - h*Math.sin(s), P0[1] + h*Math.cos(s)], [P1[0] + h*Math.sin(e), P1[1] - h*Math.cos(e)], P1];
-        }
-        function pathOf(pairs, m){
-            let d = '';
-            pairs.forEach(([f, c], j) => {
-                const g = f.map((p, k) => lerp(p, c[k], m));
-                if(!j) d += 'M' + pt(g[0]);
-                d += 'C' + pt(g[1]) + ' ' + pt(g[2]) + ' ' + pt(g[3]);
-            });
-            return d + 'Z';
-        }
-        function boubaPairs(){
-            const out = [];
-            for(let i = 0; i < 6; i++){
-                const prev = i ? PA[i-1] : PA[5] - Math.PI*2, next = i < 5 ? PA[i+1] : PA[0] + Math.PI*2;
-                out.push([petal(i,0), arc((prev + PA[i])/2, PA[i])], [petal(i,1), arc(PA[i], (PA[i] + next)/2)]);
-            }
-            return out;
-        }
-        /* Kiki: estrella irregular de seis puntas (ángulos y radios tomados del dibujo), lados rectos */
-        const KA = [-89.7, -50, -32.4, 7, 32.5, 60, 94.6, 122.5, 151.1, 163.4, 209.3, 219.4].map(d => d*Math.PI/180);
-        const KR = [44.4, 15.7, 43.1, 27.7, 46, 14.4, 43.5, 17.8, 44, 21.3, 41.8, 15.4];
-        function kikiPairs(){
-            const P = KA.map((a, i) => [50 + KR[i]*Math.cos(a), 50 + KR[i]*Math.sin(a)]);
-            return P.map((p, i) => {
-                const q = P[(i+1) % 12], e = i < 11 ? KA[i+1] : KA[0] + Math.PI*2;
-                return [[p, lerp(p,q,1/3), lerp(p,q,2/3), q], arc(KA[i], e)];
-            });
-        }
-        const BP = boubaPairs(), KP = kikiPairs();
-        const shapePath = m => pathOf(BP, m);
-        const ease = x => x*x*(3-2*x);
-        const bloom = x => { const c = 1.9, t = x - 1; return 1 + (c+1)*t*t*t + c*t*t; };
-        function draw(p, m){ p.setAttribute('d', shapePath(m)); p.setAttribute('transform', 'rotate(' + (-m*40) + ' 50 50)'); }
-        function frame(t){
-            const u = (t/1000) % 12.4;
-            let P = BP, m = 0;
-            if(u < 2) m = 0;
-            else if(u < 3.2) m = ease((u-2)/1.2);                       // Bouba se cierra
-            else if(u < 3.7) m = 1;                                      // círculo
-            else if(u < 4.9){ P = KP; m = 1 - bloom((u-3.7)/1.2); }     // sale Kiki
-            else if(u < 7.4){ P = KP; m = 0; }
-            else if(u < 8.6){ P = KP; m = ease((u-7.4)/1.2); }          // Kiki se cierra
-            else if(u < 9.1){ P = KP; m = 1; }                           // círculo
-            else if(u < 10.3){ m = 1 - bloom((u-9.1)/1.2); }            // sale Bouba
-            const d = pathOf(P, m), tr = 'rotate(' + ((P === BP ? -40 : 40)*m) + ' 50 50)';
-            document.querySelectorAll('.sh:not(.st) path').forEach(p => { p.setAttribute('d', d); p.setAttribute('transform', tr); });
-            requestAnimationFrame(frame);
-        }
 
 function apply(){const t=themes[cur],r=document.documentElement.style;
  r.setProperty('--bg',t.bg);r.setProperty('--text',t.text);r.setProperty('--border',t.border);r.setProperty('--hover',t.hover);
@@ -267,10 +200,9 @@ function fontUp(){if(lvl<sizes.length-1){lvl++;apply()}}function fontDown(){if(l
 function toggleMenu(id){const m=document.getElementById(id);m.style.display=m.style.display==='block'?'none':'block';document.querySelectorAll('.dropdown-content').forEach(o=>{if(o!==m)o.style.display='none'})}
 window.onclick=e=>{if(!e.target.matches('.menu-item'))document.querySelectorAll('.dropdown-content').forEach(m=>m.style.display='none')};
 window.onload=()=>{
- barSh.innerHTML=SH;ftSh.innerHTML=SH;
  menuTema.innerHTML=themes.map((t,i)=>`<a href="#" onclick="setTheme(${i});return false">${t.name}</a>`).join('');
  menuFuente.innerHTML=availableFonts.map(f=>`<a href="#" style="font-family:'${f.name}',${f.kind}" onclick="setFont('${f.name}');return false">${f.name}</a>`).join('');
- apply();requestAnimationFrame(frame);
+ apply();
  if(innerWidth<=860)document.querySelector('.toc').removeAttribute('open');
  const links=[...document.querySelectorAll('.toc a')];
  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id))}),{rootMargin:'-20% 0px -70% 0px'});
@@ -280,7 +212,7 @@ window.onload=()=>{
 </head>
 <body>
 <div class="menubar">
-  <span class="barlogo" id="barSh" aria-hidden="true"></span>
+  <span class="barlogo" aria-hidden="true">PE</span>
   <div class="menu"><span class="menu-item" onclick="toggleMenu('menuArchivo')">Menú</span>
     <div id="menuArchivo" class="dropdown-content">
       <a href="https://proyectoeliza.js.org/">Inicio</a><a href="https://proyectoeliza.js.org/acerca-de-eliza/">Acerca de Eliza</a>
@@ -419,9 +351,11 @@ window.onload=()=>{
 </div>
 
 <footer>
-  <span id="ftSh" aria-hidden="true"></span>
-  <p>PROYECTO ELIZA</p>
-<p>-Hecho por Yared Sermeño-</p>
+  <div class="brand">Proyecto Eliza</div>
+  <p>Hecho por Yared Sermeño</p>
+      <a href="https://proyectoeliza.js.org/" style="color:var(--text);text-decoration:none;opacity:0.75">[inicio]</a>    
+    <a href="https://proyectoeliza.js.org/terminal/" style="color:var(--text);text-decoration:none;opacity:0.75">[terminal]</a>
+    <a href="mailto:aysermeno@outlook.com" style="color:var(--text);text-decoration:none;opacity:0.75">[contacto]</a>
 </footer>
 </body>
 </html>
