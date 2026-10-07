@@ -9,7 +9,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&family=DM+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;700&family=Lexend:wght@400;600&family=Lora:wght@400;700&family=Martian+Mono:wght@400;700&family=Merriweather:wght@400;700&family=Montserrat:wght@400;600&family=Nunito+Sans:wght@400;600&family=Source+Sans+3:wght@400;600&family=Work+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&family=Bytesized&family=DM+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;700&family=Lexend:wght@400;600&family=Lora:wght@400;700&family=Martian+Mono:wght@400;700&family=Merriweather:wght@400;700&family=Montserrat:wght@400;600&family=Nunito+Sans:wght@400;600&family=Source+Sans+3:wght@400;600&family=Work+Sans:wght@400;600&display=swap" rel="stylesheet">
     <script src="elizabot.js"></script>
     <script src="espanol.js"></script>
 
@@ -137,8 +137,18 @@
         .about-chat blockquote::before { content: "\201C"; position: absolute; left: -.1em; top: -.3em; font-size: 3em; line-height: 1; opacity: .45; }
 
         .site-foot { border-top: 1px solid var(--border); text-align: center; padding: 2em 20px 2.2em; margin-top: 1em; }
-        .site-foot .brand { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .5em .8em; font-weight: 600; letter-spacing: 1.5px; overflow-wrap: anywhere; }
-        .site-foot .brand .sh { width: 2.6em; height: 2.6em; }
+        .site-foot .brand {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            justify-content: center;
+            gap: .35em .5em;
+            font-family: 'Bytesized', monospace;
+            font-weight: 400;
+            font-size: 1.55em;
+            letter-spacing: 0.08em;
+            overflow-wrap: anywhere;
+        }
         .site-foot .links { margin-top: 1em; display: flex; flex-wrap: wrap; gap: .4em 1.4em; justify-content: center; }
         .site-foot .links a { color: var(--text); text-decoration: none; }
         .site-foot .links a:hover { text-decoration: underline; }
@@ -146,16 +156,37 @@
 
         .logo {
             font-family: var(--mono);
-            display: flex;
-            align-items: center;
-            gap: .3em;
-            margin: .4em 0 .8em;
             font-weight: 600;
             letter-spacing: 1px;
+            margin: .4em 0 .8em;
             max-width: 100%;
+            /* Uses the user-selected page font */
         }
-        .barlogo { display: flex; align-items: center; }
-        .barlogo .sh { width: 22px; height: 22px; }
+        /* Full logo (footer + intro) uses single pixel font Bytesized */
+        .logo-proyecto,
+        .logo-eliza {
+            font-family: 'Bytesized', monospace;
+            font-weight: 400;
+            letter-spacing: 0.06em;
+            line-height: 1;
+        }
+        .logo-proyecto { font-size: 1em; }
+        .logo-eliza { font-size: 1em; }
+
+        .barlogo {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 0.05em;
+            font-family: 'Bytesized', monospace;
+            font-size: 19px;
+            line-height: 1;
+            letter-spacing: 0.05em;
+        }
+        .barlogo .logo-p,
+        .barlogo .logo-e {
+            font-family: 'Bytesized', monospace;
+            font-weight: 400;
+        }
         .sh { width: 1em; height: 1em; overflow: visible; flex: none; }
         .mini .sh { width: 1.15em; height: 1.15em; vertical-align: -0.22em; margin-right: .3em; }
 
@@ -167,22 +198,18 @@
             transition: opacity .8s, visibility .8s;
         }
         #intro.out { opacity: 0; visibility: hidden; }
-        .duo { display: flex; align-items: center; gap: 1rem; }
-        .duo .sh {
-            width: 2.6rem; height: 2.6rem;
+        .duo {
+            display: flex;
+            align-items: baseline;
+            gap: 0.4em;
+            font-family: 'Bytesized', monospace;
+            font-size: clamp(2rem, 8.5vw, 3.4rem);
+            letter-spacing: 0.08em;
             opacity: 0;
-            animation: pop .9s cubic-bezier(.2,1.4,.4,1) forwards, idle 2.2s ease-in-out .9s infinite alternate;
+            animation: fadeIn 0.9s ease forwards 0.3s;
         }
-        .duo .sh + .sh { animation-delay: .3s, 1.2s; }
-        @keyframes pop { from { opacity: 0; transform: scale(.15) rotate(-120deg); } to { opacity: 1; transform: none; } }
-        @keyframes idle { from { transform: none; } to { transform: scale(1.07) rotate(10deg); } }
-        #intro p {
-            margin: 0; font-size: clamp(1rem, 5.2vw, 1.5rem); letter-spacing: .06em; font-family: var(--mono);
-            white-space: nowrap; padding-right: .15em; clip-path: inset(0 100% 0 0);
-            animation: type 1.1s steps(14) 1s forwards;
-        }
-        @keyframes type { to { clip-path: inset(0 0 0 0); } }
-        @media (prefers-reduced-motion: reduce) { #intro *, #intro { animation: none !important; } #intro p { clip-path: none; } .duo .sh { opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { #intro *, #intro { animation: none !important; } .duo { opacity: 1; } }
 
         #e_display {
             width: 100%;
@@ -376,7 +403,8 @@
             const s = fontSizes[fontSizeLevel];
             document.body.style.fontSize = s + 'px';
             
-            document.querySelector('.logo').style.fontSize = (s * 0.12) + 'rem';
+            /* Logo scales with the size control but keeps its fixed typefaces */
+            document.querySelector('.logo').style.fontSize = (s * 1.35) + 'px';
             
             document.getElementById('e_display').style.fontSize = s + 'px';
 
@@ -448,8 +476,7 @@
             f.e_input.focus();
         }
 
-        /* Símbolo Bouba: una flor de seis pétalos en gota que se cierra en círculo y vuelve a abrirse */
-        const SH = '<svg class="sh" viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor"/></svg>';
+        /* Símbolos Bouba/Kiki solo para el chat */
         const ico = w => '<span class="mini"><svg class="sh ch" data-who="' + w + '" viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor"/></svg></span>';
         const ELZ = ico('k') + '<strong>ELIZA:</strong> ';
         const USR = ico('b') + '<strong>TÚ:</strong> ';
@@ -527,9 +554,6 @@
         }
 
         function buildMenus(){
-            document.getElementById('barSh').innerHTML = SH;
-            document.getElementById('ftSh').innerHTML = SH;
-            document.getElementById('iB').innerHTML = SH.replace('class="sh"','class="sh st"');
             document.getElementById('menuTema').innerHTML = themes.map((t,i) =>
                 `<a href="#" onclick="setTheme(${i});return false">${t.name}</a>`).join('');
             document.getElementById('menuFuente').innerHTML = availableFonts.map(f =>
@@ -541,13 +565,7 @@
             const el = document.getElementById('intro');
             const end = () => { el.classList.add('out'); setTimeout(() => el.remove(), 900); };
             el.onclick = end;
-            const ip = document.querySelector('#iB path'), t0 = performance.now();
-            (function tick(t){
-                if(!document.body.contains(el)) return;
-                draw(ip, 1 - bloom(Math.min(Math.max((t - t0 - 350)/1500, 0), 1)));
-                requestAnimationFrame(tick);
-            })(t0);
-            setTimeout(end, matchMedia('(prefers-reduced-motion: reduce)').matches ? 700 : 3300);
+            setTimeout(end, matchMedia('(prefers-reduced-motion: reduce)').matches ? 700 : 2200);
         }
 
         function toggleMenu(id){
@@ -574,7 +592,7 @@
 <body onload="buildMenus(); runIntro(); applyTheme(); applyFontSize(); applyFont(); setTimeout(elizaReset,120)">
 
 <div class="menubar">
-    <span class="barlogo" id="barSh" aria-hidden="true"></span>
+    <span class="barlogo" aria-hidden="true"><span class="logo-p">P</span><span class="logo-e">E</span></span>
     <div class="menu">
         <span class="menu-item" onclick="toggleMenu('menuArchivo')">Menú</span>
         <div id="menuArchivo" class="dropdown-content">
@@ -625,7 +643,7 @@
 </div>
 
 <footer class="site-foot">
-    <div class="brand"><span id="ftSh" aria-hidden="true"></span><span>PROYECTO ELIZA</span></div>
+    <div class="brand"><span class="logo-proyecto">Proyecto</span> <span class="logo-eliza">Eliza</span></div>
     <nav class="links">
         <a href="https://proyectoeliza.js.org/editor/">[Editor]</a>
         <a href="https://proyectoeliza.js.org/acerca-de-eliza/">[Acerca de Eliza]</a>
@@ -636,7 +654,7 @@
 </footer>
 
 <div id="intro" aria-label="Proyecto Eliza">
-    <div class="duo"><span id="iB"></span><p>PROYECTO ELIZA</p></div>
+    <div class="duo"><span class="logo-proyecto">Proyecto</span> <span class="logo-eliza">Eliza</span></div>
 </div>
 </body>
 </html>
