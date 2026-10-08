@@ -87,14 +87,33 @@ body {
   }
 }
 .barlogo {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.05em;
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+  column-gap: 0;
+  row-gap: 0;
   font-family: 'Bytesized', monospace;
-  font-size: 19px;
+  font-size: 14px;
   line-height: 1;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
   color: var(--text);
+  user-select: none;
+  cursor: pointer;
+}
+.barlogo .logo-p,
+.barlogo .logo-e {
+  font-weight: 400;
+  display: grid;
+  place-items: center;
+  padding: 0.12em 0.18em;
+  transition: background .2s ease, color .2s ease;
+}
+.barlogo .logo-p { grid-column: 1; grid-row: 1; }
+.barlogo .logo-e { grid-column: 2; grid-row: 2; }
+.barlogo.boxes .logo-p,
+.barlogo.boxes .logo-e {
+  background: var(--text);
+  color: var(--bg);
 }
 .menu { position: relative; }
 .menu-item { cursor: pointer; padding: 0 3px; }
@@ -551,7 +570,7 @@ body {
 <body>
 
 <div class="menubar">
-  <span class="barlogo" aria-hidden="true">PE</span>
+  <span class="barlogo" aria-hidden="true" onclick="this.classList.toggle('boxes')" title="PE"><span class="logo-p">P</span><span class="logo-e">E</span></span>
 
   <span class="menu-item" id="btn-raw" onclick="setMode('raw')" style="font-weight:600">Código</span>
   <span class="menu-item" id="btn-struct" onclick="setMode('struct')">Estructura</span>
