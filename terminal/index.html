@@ -57,21 +57,32 @@ main{flex:1;width:100%;padding:28px 14px 24px}
 #splash.out{opacity:0;pointer-events:none}
 #splash .brand-logo{
   margin:0;
+  display:flex;
+  align-items:baseline;
+  white-space:nowrap;
   font-family:'Bytesized',monospace;
   font-weight:400;
   font-size:clamp(1.9rem,7.5vw,3rem);
   letter-spacing:.1em;
   line-height:1;
-  opacity:0;
-  transform:scale(0.92);
-  animation:splashIn 1.1s cubic-bezier(.2,.8,.2,1) forwards .2s;
+  transition:opacity .9s ease;
 }
-#splash .brand-logo.hide{
+#splash .brand-logo.hide{opacity:0}
+.bl-part{display:inline-flex;align-items:baseline;overflow:hidden}
+.bl-initial{flex:none}
+.bl-gap{display:inline-block;width:.6em}
+.bl-rest{
+  display:inline-block;
+  max-width:0;
   opacity:0;
-  transform:scale(0.96);
-  transition:opacity .45s ease, transform .45s ease;
-  animation:none;
+  overflow:hidden;
+  transform:translateX(-.18em);
+  transition:max-width 2.4s cubic-bezier(.33,0,.2,1) var(--d,.6s),
+             opacity 1.4s ease calc(var(--d,.6s) + .3s),
+             transform 2.2s cubic-bezier(.33,0,.2,1) var(--d,.6s);
 }
+.bl-part:last-child .bl-rest{--d:1.3s}
+#splash.ready .bl-rest{max-width:5.2em;opacity:1;transform:none}
 #bot-selector{
   display:none;
   text-align:center;
@@ -85,13 +96,8 @@ main{flex:1;width:100%;padding:28px 14px 24px}
 #bot-selector .bot-name{font-weight:600;letter-spacing:.06em;margin-bottom:.25em}
 #bot-selector .bot-desc{opacity:.75;font-size:.95em}
 #bot-selector .hint{margin-top:1.3em;opacity:.7;font-size:.9em}
-@keyframes splashIn{
-  0%{opacity:0;transform:scale(0.92)}
-  60%{opacity:1;transform:scale(1.02)}
-  100%{opacity:1;transform:scale(1)}
-}
 @media(prefers-reduced-motion:reduce){
-  #splash .brand-logo{animation:none;opacity:1;transform:none}
+  .bl-rest,#splash.ready .bl-rest{max-width:5.2em;opacity:1;transform:none;transition:none}
   #splash .brand-logo.hide{transition:none}
   #bot-selector{transition:none}
 }
@@ -313,6 +319,7 @@ function send(e){
 function intro(){
     const logo=$('#splash .brand-logo');
     const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>$('#splash').classList.add('ready')));
 
     // Tras el logo, se oculta y aparecen las descripciones + instrucción X/Y
     const showSelect=()=>{
@@ -325,10 +332,10 @@ function intro(){
             done=true;
             const inp=$('#in');
             if(inp)inp.focus();
-        }, reduce ? 0 : 480);
+        }, reduce ? 0 : 950);
     };
 
-    t1=setTimeout(showSelect, reduce ? 400 : 2400);
+    t1=setTimeout(showSelect, reduce ? 400 : 5200);
 }
 
 function showSelector(){
@@ -501,7 +508,7 @@ window.onload=()=>{
         <button type="button" id="modeBtn" onclick="toggleMode()" aria-label="Cambiar a modo oscuro">[m:o]</button>
       </div>
     </div>
-    <div id="splash"><p class="brand-logo">Proyecto Eliza</p></div>
+    <div id="splash"><p class="brand-logo" aria-label="Proyecto Eliza"><span class="bl-part" aria-hidden="true"><span class="bl-initial">P</span><span class="bl-rest">royecto</span></span><span class="bl-gap" aria-hidden="true"></span><span class="bl-part" aria-hidden="true"><span class="bl-initial">E</span><span class="bl-rest">liza</span></span></p></div>
     <div id="content" hidden>
       <div class="rule r1" aria-hidden="true">============================================================================================================================================</div>
       <pre class="banner" id="banner" aria-label="ELIZA"><span>EEEEEE  LL      IIII  ZZZZZZZ   AAAAA</span><span>EE      LL       II       ZZ   AA   AA</span><span>EEEEE   LL       II      ZZZ   AAAAAAA</span><span>EE      LL       II     ZZ     AA   AA</span><span>EEEEEE  LLLLLL  IIII  ZZZZZZZ  AA   AA</span></pre>
