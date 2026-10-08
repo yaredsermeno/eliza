@@ -93,12 +93,21 @@ body {
   column-gap: 0;
   row-gap: 0;
   font-family: 'Bytesized', monospace;
-  font-size: 14px;
+  font-size: 1.09em;
   line-height: 1;
   letter-spacing: 0;
   color: var(--text);
   user-select: none;
   cursor: pointer;
+  text-decoration: none;
+  border-bottom: 0;
+  outline: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.barlogo:link, .barlogo:visited, .barlogo:hover, .barlogo:active, .barlogo:focus {
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 0;
 }
 .barlogo .logo-p,
 .barlogo .logo-e {
@@ -570,7 +579,7 @@ body {
 <body>
 
 <div class="menubar">
-  <span class="barlogo" aria-hidden="true" onclick="this.classList.toggle('boxes')" title="PE"><span class="logo-p">P</span><span class="logo-e">E</span></span>
+  <a class="barlogo" href="https://proyectoeliza.js.org/" title="Proyecto Eliza" aria-label="Proyecto Eliza"><span class="logo-p">P</span><span class="logo-e">E</span></a>
 
   <span class="menu-item" id="btn-raw" onclick="setMode('raw')" style="font-weight:600">Código</span>
   <span class="menu-item" id="btn-struct" onclick="setMode('struct')">Estructura</span>
