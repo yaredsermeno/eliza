@@ -49,9 +49,9 @@
             border-bottom: 1px solid var(--border);
             padding: 4px 16px;
             display: flex;
-            gap: 24px;
-            font-size: 13px;
-            min-height: 28px;
+            gap: 1.85em;
+            font-size: calc(var(--ui-size, 17px) * .765);
+            min-height: 2.15em;
             align-items: center;
             flex-wrap: wrap;
             row-gap: 2px;
@@ -180,12 +180,21 @@
             column-gap: 0;
             row-gap: 0;
             font-family: 'Bytesized', monospace;
-            font-size: 14px;
+            font-size: 1.08em;
             line-height: 1;
             letter-spacing: 0;
             color: var(--text);
             user-select: none;
             cursor: pointer;
+            text-decoration: none;
+            border-bottom: 0;
+            outline: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .barlogo:link, .barlogo:visited, .barlogo:hover, .barlogo:active, .barlogo:focus {
+            color: var(--text);
+            text-decoration: none;
+            border-bottom: 0;
         }
         .barlogo .logo-p,
         .barlogo .logo-e {
@@ -197,34 +206,77 @@
         }
         .barlogo .logo-p { grid-column: 1; grid-row: 1; }
         .barlogo .logo-e { grid-column: 2; grid-row: 2; }
-        .barlogo.boxes .logo-p,
-        .barlogo.boxes .logo-e {
-            background: var(--text);
-            color: var(--bg);
-        }
         .sh { width: 1em; height: 1em; overflow: visible; flex: none; }
         .mini .sh { width: 1.15em; height: 1.15em; vertical-align: -0.22em; margin-right: .3em; }
 
+        /* Intro: las mismas P y E se conservan y desde ellas se revela el resto del nombre. */
         #intro {
             position: fixed; inset: 0; z-index: 100;
             background: var(--bg); color: var(--text);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 2rem; cursor: pointer;
-            transition: opacity .8s, visibility .8s;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; opacity: 1; visibility: visible;
+            transition: opacity 1.2s ease, visibility 1.2s ease;
         }
-        #intro.out { opacity: 0; visibility: hidden; }
-        .duo {
+        #intro.out { opacity: 0; visibility: hidden; pointer-events: none; }
+        .intro-logo {
             display: flex;
             align-items: baseline;
-            gap: 0.4em;
             font-family: 'Bytesized', monospace;
-            font-size: clamp(2rem, 8.5vw, 3.4rem);
-            letter-spacing: 0.08em;
-            opacity: 0;
-            animation: fadeIn 0.9s ease forwards 0.3s;
+            font-size: clamp(2.4rem, 9vw, 4rem);
+            letter-spacing: .06em;
+            line-height: 1;
+            white-space: nowrap;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-        @media (prefers-reduced-motion: reduce) { #intro *, #intro { animation: none !important; } .duo { opacity: 1; } }
+        .intro-part { display: inline-flex; align-items: baseline; overflow: hidden; }
+        .intro-initial { flex: none; }
+        .intro-rest {
+            display: inline-block;
+            max-width: 0;
+            opacity: 0;
+            overflow: hidden;
+            transform: translateX(-.18em);
+            transition: max-width 2.4s cubic-bezier(.33,.0,.2,1) var(--d, .6s),
+                        opacity 1.4s ease calc(var(--d, .6s) + .3s),
+                        transform 2.2s cubic-bezier(.33,.0,.2,1) var(--d, .6s);
+        }
+        .intro-part:last-child .intro-rest { --d: 1.3s; }
+        #intro.ready .intro-rest {
+            max-width: 5.2em;
+            opacity: 1;
+            transform: translateX(0);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            #intro { transition: none; }
+            .intro-rest, #intro.ready .intro-rest { max-width: 5.2em; opacity: 1; transform: none; transition: none; }
+        }
+        /* Chat: inspiración sutil en interfaces de persona, sin afectar el resto del sitio. */
+        #e_display {
+            position: relative; width: 100%; min-height: 55vh; height: auto;
+            border: 1px solid var(--border);
+            padding: 28px clamp(16px, 4vw, 38px);
+            background: var(--bg); color: var(--text);
+            display: flex; flex-direction: column; gap: 24px;
+            overflow-y: auto; scroll-behavior: smooth;
+        }
+        #e_display::before {
+            content: "PROYECTO ELIZA";
+            position: sticky; top: -28px; align-self: flex-start;
+            margin-bottom: -6px; font-size: .68em; letter-spacing: .12em;
+            opacity: .42; pointer-events: none;
+        }
+        .msg { max-width: 82%; display: flex; flex-direction: column; gap: 7px; }
+        .msg.me { align-self: flex-end; align-items: flex-end; }
+        .who { display: flex; align-items: center; gap: .45em; font-size: .72em; font-weight: 600; letter-spacing: .1em; opacity: .62; text-transform: uppercase; }
+        .who .sh { width: 1.25em; height: 1.25em; }
+        .in { padding: .8em 1em; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; background: var(--bg); }
+        .cur::after { content: "\258B"; animation: blink 1s steps(1) infinite; }
+        .bot .bub { --c: .7em; padding: 1px; background: var(--border);
+            clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+            box-shadow: 5px 5px 0 var(--hover); }
+        .bot .in { clip-path: polygon(calc(var(--c) - .6px) 0, 100% 0, 100% calc(100% - var(--c) + .6px), calc(100% - var(--c) + .6px) 100%, 0 100%, 0 calc(var(--c) - .6px)); }
+        .me .bub { border: 1px solid var(--border); border-radius: 20px 20px 5px 20px; background: var(--hover); overflow: hidden; }
+        .me .in { background: transparent; }
+        .composer { width: 100%; display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 6px; padding: 5px 5px 5px 16px; background: var(--bg); box-shadow: 3px 3px 0 var(--hover); }
 
         #e_display {
             width: 100%;
@@ -298,7 +350,7 @@
             .menubar {
                 gap: 14px;
                 padding-inline: 10px;
-                font-size: 12px;
+                font-size: calc(var(--ui-size, 17px) * .706);
             }
 
             /* igual que Acerca de Eliza: el cuadro cuelga de su opción; el JS lo mantiene dentro de la pantalla */
@@ -416,7 +468,8 @@
 
         function applyFontSize(){
             const s = fontSizes[fontSizeLevel];
-            document.body.style.fontSize = s + 'px';
+ document.body.style.fontSize = s + 'px';
+            document.documentElement.style.setProperty('--ui-size', s + 'px');
             
             /* Logo scales with the size control but keeps its fixed typefaces */
             document.querySelector('.logo').style.fontSize = (s * 1.35) + 'px';
@@ -578,9 +631,11 @@
 
         function runIntro(){
             const el = document.getElementById('intro');
-            const end = () => { el.classList.add('out'); setTimeout(() => el.remove(), 900); };
+            const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const end = () => { el.classList.add('out'); setTimeout(() => el.remove(), 1300); };
             el.onclick = end;
-            setTimeout(end, matchMedia('(prefers-reduced-motion: reduce)').matches ? 700 : 2200);
+            requestAnimationFrame(() => el.classList.add('ready'));
+            setTimeout(end, reduced ? 1200 : 5600);
         }
 
         function toggleMenu(id){
@@ -607,7 +662,7 @@
 <body onload="buildMenus(); runIntro(); applyTheme(); applyFontSize(); applyFont(); setTimeout(elizaReset,120)">
 
 <div class="menubar">
-    <span class="barlogo" aria-hidden="true" onclick="this.classList.toggle('boxes')" title="PE"><span class="logo-p">P</span><span class="logo-e">E</span></span>
+    <a class="barlogo" href="https://proyectoeliza.js.org/" title="Proyecto Eliza" aria-label="Proyecto Eliza"><span class="logo-p">P</span><span class="logo-e">E</span></a>
     <div class="menu">
         <span class="menu-item" onclick="toggleMenu('menuArchivo')">Menú</span>
         <div id="menuArchivo" class="dropdown-content">
@@ -669,7 +724,11 @@
 </footer>
 
 <div id="intro" aria-label="Proyecto Eliza">
-    <div class="duo"><span class="logo-proyecto">Proyecto</span> <span class="logo-eliza">Eliza</span></div>
+    <div class="intro-logo" aria-hidden="true">
+        <span class="intro-part"><span class="intro-initial">P</span><span class="intro-rest">royecto</span></span>
+        <span>&nbsp;</span>
+        <span class="intro-part"><span class="intro-initial">E</span><span class="intro-rest">liza</span></span>
+    </div>
 </div>
 </body>
 </html>
