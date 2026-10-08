@@ -21,13 +21,29 @@ main{flex:1;width:100%;padding:28px 14px 24px}
 .term{background:#fff;color:var(--ink);border:1px solid #9a9a9a;min-height:24em;padding:.6em .8em 1em}
 .tools{display:flex;align-items:center;justify-content:space-between;gap:1em;margin-bottom:.4em}
 .tools .pe{
+  display:inline-grid;
+  grid-template-columns:auto auto;
+  grid-template-rows:auto auto;
+  column-gap:0;
+  row-gap:0;
   font-family:'Bytesized',monospace;
-  font-size:1.45em;
-  letter-spacing:.06em;
+  font-size:1.25em;
   line-height:1;
+  letter-spacing:0;
   color:#666;
   user-select:none;
+  cursor:pointer;
 }
+.tools .pe .logo-p,
+.tools .pe .logo-e{
+  font-weight:400;
+  display:grid;
+  place-items:center;
+  padding:0.12em 0.18em;
+  transition:background .2s ease,color .2s ease;
+}
+.tools .pe .logo-p{grid-column:1;grid-row:1}
+.tools .pe .logo-e{grid-column:2;grid-row:2}
 .tools .tools-right{display:flex;gap:1em}
 .tools button{background:none;border:0;padding:0;color:#666;font:inherit;cursor:pointer}
 .tools button:hover{color:#000;text-decoration:underline}
@@ -478,7 +494,7 @@ window.onload=()=>{
 <main>
   <div class="term" id="term">
     <div class="tools">
-      <span class="pe" aria-hidden="true">PE</span>
+      <span class="pe" aria-hidden="true"><span class="logo-p">P</span><span class="logo-e">E</span></span>
       <div class="tools-right">
         <button type="button" onclick="zoom(1)">[+Aa]</button>
         <button type="button" onclick="zoom(-1)">[-Aa]</button>
