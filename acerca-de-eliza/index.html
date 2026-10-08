@@ -14,7 +14,11 @@
 ::selection{background:var(--text);color:var(--bg)}
 body{margin:0;font-family:var(--mono);font-size:var(--fs);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;line-height:1.7}
 .menubar{border-bottom:1px solid var(--border);padding:4px 16px;display:flex;gap:24px;font-size:13px;height:28px;align-items:center;position:sticky;top:0;background:var(--bg);z-index:20}
-.barlogo{display:inline-flex;align-items:baseline;gap:0.05em;font-family:'Bytesized',monospace;font-size:19px;line-height:1;letter-spacing:0.05em;color:var(--text)}
+.barlogo{display:inline-grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:0;row-gap:0;font-family:'Bytesized',monospace;font-size:14px;line-height:1;letter-spacing:0;color:var(--text);user-select:none;cursor:pointer}
+.barlogo .logo-p,.barlogo .logo-e{font-weight:400;display:grid;place-items:center;padding:0.12em 0.18em;transition:background .2s ease,color .2s ease}
+.barlogo .logo-p{grid-column:1;grid-row:1}
+.barlogo .logo-e{grid-column:2;grid-row:2}
+.barlogo.boxes .logo-p,.barlogo.boxes .logo-e{background:var(--text);color:var(--bg)}
 .menu{position:relative}.menu-item{cursor:pointer;padding:0 4px}
 .dropdown-content{display:none;position:absolute;background:var(--bg);border:1px solid var(--border);min-width:220px;max-height:280px;overflow-y:auto;margin-top:2px;z-index:30;box-shadow:0 2px 6px rgba(0,0,0,.15)}
 .dropdown-content a{display:block;padding:6px 12px;color:var(--text);text-decoration:none}
@@ -212,7 +216,7 @@ window.onload=()=>{
 </head>
 <body>
 <div class="menubar">
-  <span class="barlogo" aria-hidden="true">PE</span>
+  <span class="barlogo" aria-hidden="true" onclick="this.classList.toggle('boxes')" title="PE"><span class="logo-p">P</span><span class="logo-e">E</span></span>
   <div class="menu"><span class="menu-item" onclick="toggleMenu('menuArchivo')">Menú</span>
     <div id="menuArchivo" class="dropdown-content">
       <a href="https://proyectoeliza.js.org/">Inicio</a><a href="https://proyectoeliza.js.org/acerca-de-eliza/">Acerca de Eliza</a>
