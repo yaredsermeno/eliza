@@ -13,8 +13,9 @@
 *{box-sizing:border-box}html{scroll-behavior:smooth}
 ::selection{background:var(--text);color:var(--bg)}
 body{margin:0;font-family:var(--mono);font-size:var(--fs);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;line-height:1.7}
-.menubar{border-bottom:1px solid var(--border);padding:4px 16px;display:flex;gap:24px;font-size:13px;height:28px;align-items:center;position:sticky;top:0;background:var(--bg);z-index:20}
-.barlogo{display:inline-grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:0;row-gap:0;font-family:'Bytesized',monospace;font-size:14px;line-height:1;letter-spacing:0;color:var(--text);user-select:none;cursor:pointer}
+.menubar{border-bottom:1px solid var(--border);padding:4px 16px;display:flex;gap:1.85em;font-size:calc(var(--fs)*.765);min-height:2.15em;align-items:center;flex-wrap:wrap;row-gap:2px;position:sticky;top:0;background:var(--bg);z-index:20}
+.barlogo{display:inline-grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:0;row-gap:0;font-family:'Bytesized',monospace;font-size:1.08em;line-height:1;letter-spacing:0;color:var(--text);user-select:none;cursor:pointer;text-decoration:none;border-bottom:0;outline:0;-webkit-tap-highlight-color:transparent}
+.barlogo:link,.barlogo:visited,.barlogo:hover,.barlogo:active,.barlogo:focus{color:var(--text);text-decoration:none;border-bottom:0}
 .barlogo .logo-p,.barlogo .logo-e{font-weight:400;display:grid;place-items:center;padding:0.12em 0.18em;transition:background .2s ease,color .2s ease}
 .barlogo .logo-p{grid-column:1;grid-row:1}
 .barlogo .logo-e{grid-column:2;grid-row:2}
@@ -27,12 +28,12 @@ body{margin:0;font-family:var(--mono);font-size:var(--fs);background:var(--bg);c
 .head{grid-column:1/-1;text-align:center}
 .logo{font-size:calc(var(--fs)*1.9);margin:.2em 0 .1em;font-weight:600;letter-spacing:1.2px}
 .head p{margin:0;opacity:.7}
-.toc{position:sticky;top:44px;border:1px solid var(--border);padding:14px 16px;font-size:.88em;line-height:1.45}
+.toc{position:sticky;top:calc(var(--fs)*1.65 + 16px);border:1px solid var(--border);padding:14px 16px;font-size:.88em;line-height:1.45}
 .toc summary{font-weight:600;cursor:pointer;margin-bottom:8px}
 .toc ol{margin:0;padding-left:1.6em}.toc li{margin:5px 0}
 .toc a{color:var(--text);text-decoration:none}.toc a:hover,.toc a.on{text-decoration:underline;text-underline-offset:3px;font-weight:600}
 article{max-width:700px}
-section{scroll-margin-top:48px;margin-bottom:2.6em}
+section{scroll-margin-top:calc(var(--fs)*1.65 + 20px);margin-bottom:2.6em}
 h2{font-size:1.35em;line-height:1.25;margin:0 0 .7em;padding-bottom:.35em;border-bottom:1px solid var(--border)}
 p,li,dd{hyphens:auto}p{margin:0 0 1.1em}
 ul,ol{padding-left:1.6em}li{margin-bottom:.5em}
@@ -44,9 +45,16 @@ dt{font-weight:600;margin-top:.9em}dd{margin:0 0 0 1.2em}
 .download-btn{display:inline-block;padding:.8em 1.6em;color:var(--text);border:2px solid var(--border);text-decoration:none}
 .download-btn:hover{background:var(--hover)}
 .center{text-align:center}
-footer{text-align:center;padding:30px 20px 36px;border-top:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5em}
-footer .brand{font-family:'Bytesized',monospace;font-weight:400;font-size:1.55em;letter-spacing:0.08em;line-height:1}
-footer p{margin:0;opacity:.75;font-size:.95em;letter-spacing:.04em}
+footer{border-top:1px solid var(--border);text-align:center;padding:2em 20px 2.2em;margin-top:1em}
+footer .brand{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:center;gap:.35em .5em;font-family:'Bytesized',monospace;font-weight:400;font-size:1.55em;letter-spacing:.08em;line-height:1;overflow-wrap:anywhere}
+footer .links{margin-top:1.1em;display:flex;flex-wrap:wrap;gap:.4em 1.4em;justify-content:center;font-size:.88em}
+footer .links a{color:var(--text);text-decoration:none}
+footer .links a:hover{text-decoration:underline;text-underline-offset:4px}
+footer .links a[aria-current="page"]{opacity:.55;pointer-events:none}
+footer .top{margin-top:1.3em;font-size:.82em;opacity:.65}
+footer .top a{color:var(--text);text-decoration:none}
+footer .top a:hover{opacity:1;text-decoration:underline;text-underline-offset:4px}
+footer .made{margin:1.1em 0 0;opacity:.7;font-size:.85em}
 @media(max-width:860px){
   .wrap{grid-template-columns:1fr;gap:20px}
   .toc{position:static}
@@ -55,7 +63,7 @@ footer p{margin:0;opacity:.75;font-size:.95em;letter-spacing:.04em}
 @media(max-width:600px){
   .menubar{
     height:auto;
-    min-height:28px;
+    min-height:2.15em;
     flex-wrap:wrap;
     gap:3px 12px;
     padding:4px 10px;
@@ -216,7 +224,7 @@ window.onload=()=>{
 </head>
 <body>
 <div class="menubar">
-  <span class="barlogo" aria-hidden="true" onclick="this.classList.toggle('boxes')" title="PE"><span class="logo-p">P</span><span class="logo-e">E</span></span>
+  <a class="barlogo" href="https://proyectoeliza.js.org/" title="Proyecto Eliza" aria-label="Proyecto Eliza"><span class="logo-p">P</span><span class="logo-e">E</span></a>
   <div class="menu"><span class="menu-item" onclick="toggleMenu('menuArchivo')">Menú</span>
     <div id="menuArchivo" class="dropdown-content">
       <a href="https://proyectoeliza.js.org/">Inicio</a><a href="https://proyectoeliza.js.org/acerca-de-eliza/">Acerca de Eliza</a>
@@ -355,8 +363,16 @@ window.onload=()=>{
 </div>
 
 <footer>
-  <div class="brand">Proyecto Eliza</div>
-  <p>Hecho por Yared Sermeño</p>
+  <div class="brand"><span>Proyecto</span> <span>Eliza</span></div>
+  <nav class="links" aria-label="Enlaces del sitio">
+    <a href="https://proyectoeliza.js.org/">[Inicio]</a>
+    <a href="https://proyectoeliza.js.org/acerca-de-eliza/" aria-current="page">[Acerca de Eliza]</a>
+    <a href="https://proyectoeliza.js.org/terminal/">[Terminal]</a>
+    <a href="https://proyectoeliza.js.org/editor/">[Editor]</a>
+    <a href="mailto:aysermeno@outlook.com">[Contacto]</a>
+  </nav>
+  <div class="top"><a href="#top" onclick="window.scrollTo({top:0});return false">↑ Volver arriba</a></div>
+  <p class="made">Hecho por Yared Sermeño</p>
 </footer>
 </body>
 </html>
