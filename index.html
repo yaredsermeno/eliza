@@ -1,734 +1,904 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ELIZA en Espanol - Proyecto ELIZA</title>
-    <meta name="description" content="ELIZA (Joseph Weizenbaum, MIT, 1966) es un chatbot que simula a una psicoterapeuta rogeriano mediante palabras clave y patrones.">
-    <link rel="icon" href="logo.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proyecto Eliza</title>
+<meta name="description" content="ELIZA ampliada y en español. Chatbot histórico de 1966, con PARRY y editor de guiones.">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bytesized&family=Martian+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="elizabot.js"></script>
+<script src="espanol.js"></script>
+<script src="parry.js"></script>
+<style>
+:root {
+  --a: #362ABA;
+  --b: #897CE5;
+  --page-bg: var(--b);
+  --page-fg: var(--a);
+  --term-bg: var(--a);
+  --term-fg: var(--b);
+  --term-border: var(--b);
+  --muted: color-mix(in srgb, var(--page-fg) 55%, transparent);
+  --line: color-mix(in srgb, var(--page-fg) 35%, transparent);
+}
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&family=Bytesized&family=DM+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;700&family=Lexend:wght@400;600&family=Lora:wght@400;700&family=Martian+Mono:wght@400;700&family=Merriweather:wght@400;700&family=Montserrat:wght@400;600&family=Nunito+Sans:wght@400;600&family=Source+Sans+3:wght@400;600&family=Work+Sans:wght@400;600&display=swap" rel="stylesheet">
-    <script src="elizabot.js"></script>
-    <script src="espanol.js"></script>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--page-bg);
+  color: var(--page-fg);
+  font: 11px/1.6 'Martian Mono', monospace;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: background .25s ease, color .25s ease;
+}
+::selection { background: var(--page-fg); color: var(--page-bg); }
 
-    <style>           
+main { flex: 1; width: 100%; padding: 28px 14px 24px; }
+#stage {
+  width: min(100%, 46em);
+  margin: 0 auto;
+}
+#stage:fullscreen,
+#stage:-webkit-full-screen {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 1.2em;
+  background: var(--page-bg);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+#stage:fullscreen .term,
+#stage:-webkit-full-screen .term {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: none;
+  overflow: auto;
+}
+#stage:fullscreen .bar,
+#stage:-webkit-full-screen .bar {
+  width: 100%;
+  max-width: none;
+  margin-top: .7em;
+}
 
-        :root {
-            --mono: 'Martian Mono', monospace;
-            --bg: #FAFAFA;
-            --text: #18181A;
-            --border: #18181A;
-            --hover: #E0E0E0;
-        }
+.term, .bar { width: 100%; margin: 0 auto; }
 
-        * { box-sizing: border-box; }
-        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; max-width: 100%; }
-        ::selection { background: var(--text); color: var(--bg); }
+.term {
+  background: var(--term-bg);
+  color: var(--term-fg);
+  border: 1px solid var(--term-border);
+  min-height: 24em;
+  padding: .6em .8em 1em;
+  transition: background .25s ease, color .25s ease, border-color .25s ease;
+}
 
-        body {
-            margin: 0;
-            font-family: var(--mono);
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            min-height: 100dvh;
-            width: 100%;
-            max-width: 100%;
-            overflow-x: clip;
-            display: flex;
-            flex-direction: column;
-        }
+.tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em;
+  margin-bottom: .4em;
+}
+.tools .pe {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+  font-family: 'Bytesized', monospace;
+  font-size: 1.25em;
+  line-height: 1;
+  color: color-mix(in srgb, var(--term-fg) 55%, transparent);
+  user-select: none;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+  text-decoration: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+.tools .pe:hover,
+.tools .pe:focus,
+.tools .pe:active {
+  color: var(--term-fg);
+  text-decoration: none !important;
+  outline: 0;
+}
+.tools .pe .logo-p,
+.tools .pe .logo-e {
+  font-weight: 400;
+  display: grid;
+  place-items: center;
+  padding: 0.12em 0.18em;
+  text-decoration: none !important;
+}
+.tools .pe .logo-p { grid-column: 1; grid-row: 1; }
+.tools .pe .logo-e { grid-column: 2; grid-row: 2; }
+.tools .tools-right { display: flex; gap: 1em; }
+.tools .tools-right button {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: color-mix(in srgb, var(--term-fg) 55%, transparent);
+  font: inherit;
+  cursor: pointer;
+}
+.tools .tools-right button:hover { color: var(--term-fg); text-decoration: underline; }
 
-        /* Los hijos flex nunca deben ser más anchos que su contenedor */
-        .container, .container > *, form, form > *, #e_display, .msg, .bub, .in { min-width: 0; max-width: 100%; }
+/* —— Splash / entrada —— */
+#splash {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4em;
+  min-height: 18em;
+  transition: opacity .5s ease;
+}
+#splash.out { opacity: 0; pointer-events: none; }
 
-        .menubar {
-            background: var(--bg);
-            border-bottom: 1px solid var(--border);
-            padding: 4px 16px;
-            display: flex;
-            gap: 1.85em;
-            font-size: calc(var(--ui-size, 17px) * .765);
-            min-height: 2.15em;
-            align-items: center;
-            flex-wrap: wrap;
-            row-gap: 2px;
-            overflow: visible;
-            position: relative;
-            width: 100%;
-            z-index: 20;
-        }
+#splash .brand-logo {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  white-space: nowrap;
+  font-family: 'Bytesized', monospace;
+  font-weight: 400;
+  font-size: clamp(1.9rem, 7.5vw, 3rem);
+  letter-spacing: .1em;
+  line-height: 1;
+  color: var(--term-fg);
+}
+.bl-part { display: inline-flex; align-items: baseline; overflow: hidden; }
+.bl-initial { flex: none; }
+.bl-gap { display: inline-block; width: .6em; }
+.bl-rest {
+  display: inline-block;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateX(-.18em);
+  animation: brandLoop 5.2s cubic-bezier(.33, 0, .2, 1) infinite;
+}
+.bl-part:last-child .bl-rest { animation-delay: .7s; }
+@keyframes brandLoop {
+  0%, 10%  { max-width: 0; opacity: 0; transform: translateX(-.18em); }
+  30%, 62% { max-width: 5.2em; opacity: 1; transform: translateX(0); }
+  82%, 100%{ max-width: 0; opacity: 0; transform: translateX(-.18em); }
+}
 
-        .menu {
-            position: relative;
-            flex: 0 0 auto;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            white-space: nowrap;
-        }
+.splash-note {
+  max-width: 28em;
+  text-align: center;
+  opacity: .8;
+  font-size: .95em;
+  line-height: 1.7;
+  margin: 0;
+}
 
-        .menu-item {
-            cursor: pointer;
-            color: var(--text);
-            padding: 0 4px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1.2;
-            white-space: nowrap;
-            flex: 0 0 auto;
-        }
+#bot-selector {
+  display: none;
+  text-align: center;
+  max-width: 36em;
+  line-height: 1.65;
+  opacity: 0;
+  transition: opacity .5s ease;
+}
+#bot-selector.show { display: block; opacity: 1; }
+#bot-selector .bot-block { margin: 0 0 1.1em; }
+#bot-selector .bot-name { font-weight: 600; letter-spacing: .06em; margin-bottom: .25em; }
+#bot-selector .bot-desc { opacity: .75; font-size: .95em; }
+#bot-selector .hint { margin-top: 1.3em; opacity: .7; font-size: .9em; }
+#bot-selector .cmds {
+  margin-top: 1em;
+  opacity: .55;
+  font-size: .82em;
+  line-height: 1.6;
+}
+#bot-selector .tc { visibility: hidden; }
+#bot-selector .tc.on { visibility: visible; }
+#bot-selector .tc.last { position: relative; }
+#bot-selector .tc.last::after {
+  content: "\258B";
+  position: absolute;
+  left: 100%;
+  top: 0;
+  animation: bl 1s steps(1) infinite;
+}
 
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            min-width: 220px;
-            max-width: calc(100vw - 20px);
-            max-height: 280px;
-            overflow-y: auto;
-            margin-top: 2px;
-            z-index: 30;
-            line-height: 1.7;
-            white-space: normal;
-            box-shadow: 0 2px 6px rgba(0,0,0,.15);
-        }
+@media (prefers-reduced-motion: reduce) {
+  .bl-rest {
+    animation: none;
+    max-width: 5.2em;
+    opacity: 1;
+    transform: none;
+  }
+  #bot-selector { transition: none; }
+}
 
-        .dropdown-content a {
-            display: block;
-            padding: 6px 12px;
-            color: var(--text);
-            text-decoration: none;
-        }
+/* —— Terminal content —— */
+.rule { white-space: nowrap; overflow: hidden; }
+.banner {
+  margin: .3em 0;
+  font: inherit;
+  line-height: 1.2;
+  padding-left: 7ch;
+  overflow: hidden;
+}
+.banner span { display: block; white-space: pre; }
+.info { margin: .7em 0 1.3em; padding-left: 3ch; }
+.il { display: block; }
+#content .rule,
+#content .banner span,
+#content .il { opacity: 0; }
 
-        .dropdown-content a:hover {
-            background: var(--text);
-            color: var(--bg);
-        }
+@keyframes fi { to { opacity: 1; } }
+@keyframes terminalType {
+  from { opacity: 1; clip-path: inset(0 100% 0 0); }
+  to   { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+.go .rule.r1 { animation: fi .25s forwards; }
+.go .banner span { opacity: 1; clip-path: inset(0 100% 0 0); }
+.go.typing .banner span {
+  animation: terminalType var(--type-duration, .7s) steps(var(--type-steps, 38), end) forwards;
+}
+.go .rule.r2 { animation: fi .25s forwards; }
+.go .il { opacity: 1; clip-path: inset(0 100% 0 0); }
+.go.typing .il {
+  animation: terminalType var(--type-duration, 1.2s) steps(var(--type-steps, 80), end) forwards;
+}
+#log .typing-line .tx {
+  display: inline-block;
+  opacity: 1;
+  white-space: pre-wrap;
+  overflow: hidden;
+  vertical-align: bottom;
+  clip-path: inset(0 100% 0 0);
+}
+#log .typing-line .tx.is-typing {
+  animation: terminalType var(--type-duration, 1.4s) steps(var(--type-steps, 80), end) forwards;
+}
+.reduced-motion .go.typing .banner span,
+.reduced-motion .go.typing .il,
+.reduced-motion #log .typing-line .tx.is-typing {
+  animation: none !important;
+  clip-path: none !important;
+}
 
-        .container {
-            flex: 1;
-            max-width: 760px;
-            margin: 0 auto;
-            width: 100%;
-            padding: 12px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+.ln { display: flex; gap: 1ch; margin: 0 0 .5em; }
+.pr { flex: none; }
+.tx { white-space: pre-wrap; overflow-wrap: anywhere; }
+.cur::after { content: "\258B"; animation: bl 1s steps(1) infinite; }
+@keyframes bl { 50% { opacity: 0; } }
 
-        .about-chat {
-            width: 100%;
-            margin: 22px 0 8px;
-            padding-top: 14px;
-            border-top: 1px solid var(--border);
-            font-size: .82em;
-            line-height: 1.75;
-            overflow-wrap: anywhere;
-        }
-        .about-chat p { margin: 0 0 1.3em; }
-        .about-chat blockquote { position: relative; margin: 0 0 1.3em; padding-left: 1.7em; }
-        .about-chat blockquote::before { content: "\201C"; position: absolute; left: -.1em; top: -.3em; font-size: 3em; line-height: 1; opacity: .45; }
+.bar {
+  display: flex;
+  gap: .6em;
+  margin-top: .7em;
+  align-items: center;
+}
+.bar input {
+  flex: 1;
+  min-width: 0;
+  margin-right: 2em;
+  background: var(--term-bg);
+  color: var(--term-fg);
+  border: 1px solid var(--term-border);
+  border-radius: 2px;
+  padding: .3em .5em;
+  font: inherit;
+  caret-color: var(--term-fg);
+  outline: 0;
+  transition: background .25s ease, color .25s ease, border-color .25s ease;
+}
+.bar input:focus { border-color: var(--term-fg); }
+.bar input::placeholder { color: color-mix(in srgb, var(--term-fg) 45%, transparent); }
+.bar button {
+  font: inherit;
+  background: var(--term-bg);
+  color: var(--term-fg);
+  border: 1px solid var(--term-border);
+  border-radius: 3px;
+  padding: .2em .7em;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+.bar button:hover {
+  background: var(--term-fg);
+  color: var(--term-bg);
+}
 
-        .site-foot { border-top: 1px solid var(--border); text-align: center; padding: 2em 20px 2.2em; margin-top: 1em; }
-        .site-foot .brand {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: baseline;
-            justify-content: center;
-            gap: .35em .5em;
-            font-family: 'Bytesized', monospace;
-            font-weight: 400;
-            font-size: 1.55em;
-            letter-spacing: 0.08em;
-            overflow-wrap: anywhere;
-        }
-        .site-foot .links { margin-top: 1em; display: flex; flex-wrap: wrap; gap: .4em 1.4em; justify-content: center; }
-        .site-foot .links a { color: var(--text); text-decoration: none; }
-        .site-foot .links a:hover { text-decoration: underline; }
-        .site-foot .made { margin: 1.3em 0 0; font-size: .85em; opacity: .7; }
+/* —— Doc —— */
+.doc {
+  width: min(100%, 56em);
+  margin: 3.5em auto 0;
+  line-height: 1.75;
+  color: var(--page-fg);
+}
+.doc p { margin: 0 0 1.4em; }
+.doc h2 {
+  font-size: 1.15em;
+  margin: 2em 0 .7em;
+  padding-bottom: .3em;
+  border-bottom: 1px solid var(--line);
+}
+.doc code {
+  background: color-mix(in srgb, var(--page-fg) 8%, var(--page-bg));
+  padding: .05em .35em;
+}
+.doc pre {
+  background: color-mix(in srgb, var(--page-fg) 8%, var(--page-bg));
+  border: 1px solid var(--line);
+  padding: 1em;
+  overflow-x: auto;
+  font-size: .88em;
+  line-height: 1.5;
+  margin: 1.2em 0;
+}
+.doc pre code { padding: 0; background: none; }
+.doc blockquote {
+  position: relative;
+  margin: 0 0 1.4em;
+  padding-left: 1.7em;
+}
+.doc blockquote::before {
+  content: "\201C";
+  position: absolute;
+  left: -.1em;
+  top: -.3em;
+  font-size: 3em;
+  line-height: 1;
+  color: var(--muted);
+}
+.doc .download-btn {
+  display: inline-block;
+  padding: .8em 1.6em;
+  color: var(--page-fg);
+  border: 2px solid var(--page-fg);
+  text-decoration: none;
+  margin: .5em 0 1em;
+}
+.doc .download-btn:hover {
+  background: var(--page-fg);
+  color: var(--page-bg);
+}
+.doc .center { text-align: center; }
+.doc ul { padding-left: 1.6em; }
+.doc li { margin-bottom: .5em; }
 
-        .logo {
-            font-family: var(--mono);
-            font-weight: 600;
-            letter-spacing: 1px;
-            margin: .4em 0 .8em;
-            max-width: 100%;
-            /* Uses the user-selected page font */
-        }
-        /* Full logo (footer + intro) uses single pixel font Bytesized */
-        .logo-proyecto,
-        .logo-eliza {
-            font-family: 'Bytesized', monospace;
-            font-weight: 400;
-            letter-spacing: 0.06em;
-            line-height: 1;
-        }
-        .logo-proyecto { font-size: 1em; }
-        .logo-eliza { font-size: 1em; }
+/* —— Footer —— */
+footer {
+  border-top: 1px solid var(--line);
+  text-align: center;
+  padding: 2.4em 14px 2.8em;
+  color: var(--page-fg);
+  margin-top: 2em;
+}
+.brand {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: .4em;
+  font-family: 'Bytesized', monospace;
+  font-weight: 400;
+  font-size: 1.55em;
+  letter-spacing: .08em;
+  line-height: 1;
+}
+.links {
+  margin-top: 1.1em;
+  display: flex;
+  gap: .4em 1.4em;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.links a {
+  color: var(--page-fg);
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+.made {
+  margin: 1.2em 0 0;
+  opacity: .65;
+  font-size: .85em;
+}
 
-        .barlogo {
-            display: inline-grid;
-            grid-template-columns: auto auto;
-            grid-template-rows: auto auto;
-            column-gap: 0;
-            row-gap: 0;
-            font-family: 'Bytesized', monospace;
-            font-size: 1.08em;
-            line-height: 1;
-            letter-spacing: 0;
-            color: var(--text);
-            user-select: none;
-            cursor: pointer;
-            text-decoration: none;
-            border-bottom: 0;
-            outline: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .barlogo:link, .barlogo:visited, .barlogo:hover, .barlogo:active, .barlogo:focus {
-            color: var(--text);
-            text-decoration: none;
-            border-bottom: 0;
-        }
-        .barlogo .logo-p,
-        .barlogo .logo-e {
-            font-weight: 400;
-            display: grid;
-            place-items: center;
-            padding: 0.12em 0.18em;
-            transition: background .2s ease, color .2s ease;
-        }
-        .barlogo .logo-p { grid-column: 1; grid-row: 1; }
-        .barlogo .logo-e { grid-column: 2; grid-row: 2; }
-        .sh { width: 1em; height: 1em; overflow: visible; flex: none; }
-        .mini .sh { width: 1.15em; height: 1.15em; vertical-align: -0.22em; margin-right: .3em; }
+@media (max-width: 520px) {
+  .bar { flex-wrap: wrap; }
+  .bar input { flex-basis: 100%; margin-right: 0; }
+  .banner { padding-left: 0; }
+}
+</style>
+<script>
+const eliza = new ElizaBot();
+const $ = s => document.querySelector(s);
+const SZ = [9, 10, 11, 12, 13, 14, 16];
+let lvl = 2, rows = [], tm, ready = false, done = false, t1, t2, t3;
+let selectedBot = null;
 
-        /* Intro: las mismas P y E se conservan y desde ellas se revela el resto del nombre. */
-        #intro {
-            position: fixed; inset: 0; z-index: 100;
-            background: var(--bg); color: var(--text);
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; opacity: 1; visibility: visible;
-            transition: opacity 1.2s ease, visibility 1.2s ease;
-        }
-        #intro.out { opacity: 0; visibility: hidden; pointer-events: none; }
-        .intro-logo {
-            display: flex;
-            align-items: baseline;
-            font-family: 'Bytesized', monospace;
-            font-size: clamp(2.4rem, 9vw, 4rem);
-            letter-spacing: .06em;
-            line-height: 1;
-            white-space: nowrap;
-        }
-        .intro-part { display: inline-flex; align-items: baseline; overflow: hidden; }
-        .intro-initial { flex: none; }
-        .intro-rest {
-            display: inline-block;
-            max-width: 0;
-            opacity: 0;
-            overflow: hidden;
-            transform: translateX(-.18em);
-            transition: max-width 2.4s cubic-bezier(.33,.0,.2,1) var(--d, .6s),
-                        opacity 1.4s ease calc(var(--d, .6s) + .3s),
-                        transform 2.2s cubic-bezier(.33,.0,.2,1) var(--d, .6s);
-        }
-        .intro-part:last-child .intro-rest { --d: 1.3s; }
-        #intro.ready .intro-rest {
-            max-width: 5.2em;
-            opacity: 1;
-            transform: translateX(0);
-        }
-        @media (prefers-reduced-motion: reduce) {
-            #intro { transition: none; }
-            .intro-rest, #intro.ready .intro-rest { max-width: 5.2em; opacity: 1; transform: none; transition: none; }
-        }
-        /* Chat: inspiración sutil en interfaces de persona, sin afectar el resto del sitio. */
-        #e_display {
-            position: relative; width: 100%; min-height: 55vh; height: auto;
-            border: 1px solid var(--border);
-            padding: 28px clamp(16px, 4vw, 38px);
-            background: var(--bg); color: var(--text);
-            display: flex; flex-direction: column; gap: 24px;
-            overflow-y: auto; scroll-behavior: smooth;
-        }
-        #e_display::before {
-            content: "PROYECTO ELIZA";
-            position: sticky; top: -28px; align-self: flex-start;
-            margin-bottom: -6px; font-size: .68em; letter-spacing: .12em;
-            opacity: .42; pointer-events: none;
-        }
-        .msg { max-width: 82%; display: flex; flex-direction: column; gap: 7px; }
-        .msg.me { align-self: flex-end; align-items: flex-end; }
-        .who { display: flex; align-items: center; gap: .45em; font-size: .72em; font-weight: 600; letter-spacing: .1em; opacity: .62; text-transform: uppercase; }
-        .who .sh { width: 1.25em; height: 1.25em; }
-        .in { padding: .8em 1em; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; background: var(--bg); }
-        .cur::after { content: "\258B"; animation: blink 1s steps(1) infinite; }
-        .bot .bub { --c: .7em; padding: 1px; background: var(--border);
-            clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
-            box-shadow: 5px 5px 0 var(--hover); }
-        .bot .in { clip-path: polygon(calc(var(--c) - .6px) 0, 100% 0, 100% calc(100% - var(--c) + .6px), calc(100% - var(--c) + .6px) 100%, 0 100%, 0 calc(var(--c) - .6px)); }
-        .me .bub { border: 1px solid var(--border); border-radius: 20px 20px 5px 20px; background: var(--hover); overflow: hidden; }
-        .me .in { background: transparent; }
-        .composer { width: 100%; display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 6px; padding: 5px 5px 5px 16px; background: var(--bg); box-shadow: 3px 3px 0 var(--hover); }
+function zoom(d) {
+  lvl = Math.min(SZ.length - 1, Math.max(0, lvl + d));
+  document.body.style.fontSize = SZ[lvl] + 'px';
+}
 
-        #e_display {
-            width: 100%;
-            min-height: 55vh;
-            height: auto;
-            border: 1px solid var(--border);
-            padding: 18px;
-            background: var(--bg);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .msg { max-width: 82%; display: flex; flex-direction: column; gap: 5px; }
-        .msg.me { align-self: flex-end; align-items: flex-end; }
-        .who { display: flex; align-items: center; gap: .45em; font-size: .78em; font-weight: 600; letter-spacing: .08em; opacity: .85; }
-        .who .sh { width: 1.3em; height: 1.3em; }
-        .in { padding: .6em .9em; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; background: var(--bg); }
-        .in:empty::before { content: "\200b"; }
-        .cur::after { content: "\258B"; animation: blink 1s steps(1) infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
-        /* ELIZA: recuadro anguloso (esquinas cortadas, como Kiki) */
-        .bot .bub { --c: .85em; padding: 1px; background: var(--border);
-            clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
-        .bot .in { clip-path: polygon(calc(var(--c) - .6px) 0, 100% 0, 100% calc(100% - var(--c) + .6px), calc(100% - var(--c) + .6px) 100%, 0 100%, 0 calc(var(--c) - .6px)); }
-        /* Tú: recuadro redondeado (como Bouba) */
-        .me .bub { border: 1px solid var(--border); border-radius: 22px 22px 4px 22px; background: var(--hover); overflow: hidden; }
-        .me .in { background: transparent; }
+function toggleFullscreen() {
+  const stage = document.getElementById('stage');
+  if (!stage) return;
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  } else {
+    if (stage.requestFullscreen) stage.requestFullscreen();
+    else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
+  }
+}
 
-        form {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-        }
+function row(who, text, scroll) {
+  const d = document.createElement('div');
+  d.className = 'ln ' + who;
+  const p = document.createElement('span');
+  p.className = 'pr';
+  p.textContent = who === 'bot'
+    ? (selectedBot === 'parry' ? 'PARRY >' : 'ELIZA >')
+    : 'TÚ    >';
+  const t = document.createElement('span');
+  t.className = 'tx';
+  t.textContent = text;
+  d.append(p, t);
+  const log = $('#log');
+  if (log) log.append(d);
+  rows.push(d);
+  if (scroll) d.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  return d;
+}
 
-        input[type="text"] {
-            width: 100%;
-            font-family: var(--mono);
-            border: 1px solid var(--border);
-            padding: 12px 14px;
-            background: var(--bg);
-            color: var(--text);
-        }
+function revealInitialGreeting(text) {
+  const w = row('bot', '', false);
+  w.classList.add('initial-greeting');
+  const tx = w.querySelector('.tx');
+  tx.textContent = '';
+  tx.classList.add('cur');
+  let i = 0;
+  const type = () => {
+    if (i >= text.length) {
+      clearInterval(w._greetTimer);
+      w._greetTimer = null;
+      tx.classList.remove('cur');
+      ready = true;
+      w.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      return;
+    }
+    tx.textContent += text.charAt(i++);
+  };
+  w.style.opacity = '1';
+  type();
+  w._greetTimer = setInterval(type, 24);
+  return w;
+}
 
-        input[type="text"]::placeholder {
-            color: var(--text);
-            opacity: 0.55;
-        }
+function typeInto(el, text, doneCb) {
+  if (!el) return;
+  clearInterval(el._typeTimer);
+  el.textContent = '';
+  el.classList.add('cur');
+  let i = 0;
+  const step = () => {
+    if (i >= text.length) {
+      clearInterval(el._typeTimer);
+      el._typeTimer = null;
+      el.classList.remove('cur');
+      if (doneCb) doneCb();
+      return;
+    }
+    el.textContent += text.charAt(i++);
+  };
+  step();
+  el._typeTimer = setInterval(step, 24);
+}
 
-        .buttons {
-            display: flex;
-            gap: 22px;
-            justify-content: center;
-        }
+function restart(first, staged) {
+  if (staged === undefined) staged = true;
+  clearTimeout(tm);
+  rows.forEach(r => {
+    clearInterval(r._greetTimer);
+    r.remove();
+  });
+  rows = [];
+  ready = false;
 
-        .composer { width: 100%; display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 999px; padding: 5px 5px 5px 20px; background: var(--bg); }
-        .composer:focus-within { outline: 2px solid var(--border); outline-offset: 2px; }
-        .composer input[type="text"] { flex: 1; width: auto; min-width: 0; border: 0; padding: 8px 0; background: transparent; outline: 0; }
-        .send { width: 42px; height: 42px; flex: none; border: 0; border-radius: 50%; background: var(--text); color: var(--bg); display: grid; place-items: center; padding: 0; cursor: pointer; }
-        .send:hover { opacity: .85; }
-        .reset { background: none; border: 0; color: var(--text); font-family: var(--mono); font-size: .85em; opacity: .65; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
-        .reset:hover { opacity: 1; }
-        @media (max-width: 520px) {
-            .msg { max-width: 100%; }
-            .container { padding-inline: 14px; }
-            #e_display { padding: 12px; gap: 16px; }
-            .composer { padding-left: 14px; }
+  let initial = '';
+  if (selectedBot === 'parry') {
+    if (window.parry && typeof parry.reset === 'function') parry.reset();
+    initial = window.parry && typeof parry.getInitial === 'function'
+      ? parry.getInitial()
+      : '¿Quién eres y por qué quieres hablar conmigo?';
+  } else {
+    eliza.reset();
+    initial = eliza.getInitial();
+  }
 
-            .menubar {
-                gap: 14px;
-                padding-inline: 10px;
-                font-size: calc(var(--ui-size, 17px) * .706);
-            }
+  if (staged) {
+    tm = setTimeout(function () { revealInitialGreeting(initial); }, 3400);
+  } else {
+    const w = row('bot', '', !first);
+    const tx = w.querySelector('.tx');
+    typeInto(tx, initial, function () {
+      ready = true;
+      w.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    });
+  }
+}
 
-            /* igual que Acerca de Eliza: el cuadro cuelga de su opción; el JS lo mantiene dentro de la pantalla */
-            .menu { position: relative; }
-            .dropdown-content {
-                line-height: 1.4;
-                min-width: min(220px, calc(100vw - 20px));
-                max-width: calc(100vw - 20px);
-            }
+function handleCommand(v) {
+  const cmd = v.toLowerCase().trim();
+  if (cmd === '*limpiar') {
+    if (selectedBot) {
+      clearTimeout(tm);
+      rows.forEach(function (r) {
+        clearInterval(r._greetTimer);
+        r.remove();
+      });
+      rows = [];
+      ready = false;
+      if (selectedBot === 'parry') {
+        if (window.parry && typeof parry.reset === 'function') parry.reset();
+      } else {
+        eliza.reset();
+      }
+      var initial = selectedBot === 'parry'
+        ? (window.parry && typeof parry.getInitial === 'function' ? parry.getInitial() : '¿Quién eres y por qué quieres hablar conmigo?')
+        : eliza.getInitial();
+      row('bot', '[sesión reiniciada]', true);
+      var w = row('bot', '', true);
+      typeInto(w.querySelector('.tx'), initial, function () { ready = true; });
+    }
+    return true;
+  }
+  return false;
+}
 
-            .menu {
-                gap: 5px;
-            }
+function send(e) {
+  e.preventDefault();
+  const i = $('#in');
+  if (!i) return;
+  const v = i.value.trim();
+  i.value = '';
+  if (!v) return;
 
-            .menu-item {
-                padding-inline: 3px;
-            }
-        }
+  if (!selectedBot) {
+    const key = v.toLowerCase();
+    if (key === 'x' || key === 'eliza') {
+      selectedBot = 'eliza';
+      startSelectedBot();
+    } else if (key === 'y' || key === 'parry') {
+      selectedBot = 'parry';
+      startSelectedBot();
+    }
+    return;
+  }
 
-        @media (max-width: 360px) {
-            .menubar {
-                gap: 10px;
-                padding-inline: 8px;
-            }
+  if (v.charAt(0) === '*') {
+    row('me', v, true);
+    if (!handleCommand(v)) {
+      row('bot', 'Comando desconocido. Escribe *limpiar para reiniciar la conversación.', true);
+    }
+    return;
+  }
 
-            .menu {
-                gap: 3px;
-            }
+  if (!ready) return;
 
-            .menu-item {
-                padding-inline: 2px;
-            }
-        }
-    </style>
+  row('me', v, true);
+  const w = row('bot', '', true);
+  const tx = w.querySelector('.tx');
+  tx.classList.add('cur');
 
-    <script>
-        var eliza = new ElizaBot();
-        var elizaLines = [];
-        var displayCols = 70;
-        var displayRows = 22;
-        var typingTimeout;
+  tm = setTimeout(function () {
+    tx.classList.remove('cur');
+    tx.textContent = selectedBot === 'parry'
+      ? (window.parry ? parry.transform(v) : 'No se pudo cargar PARRY.')
+      : eliza.transform(v);
+    w.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, 800 + Math.random() * 600);
+}
 
-        let fontSizeLevel = 3;
-        const fontSizes = [11, 13, 15, 17, 19, 21, 23];
+function intro() {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () { $('#splash').classList.add('ready'); });
+  });
 
-        let currentTheme = 1;
-        const themes = [
-            { name: 'Oscuro',        text: '#ECE9E2', bg: '#151517', border: '#ECE9E2', hover: '#242427' },
-            { name: 'Claro',         text: '#1A1A1C', bg: '#F6F4EF', border: '#1A1A1C', hover: '#E6E2D8' },
-            { name: 'Rosa',          text: '#7A1040', bg: '#FCE4F0', border: '#7A1040', hover: '#F2CCE0' },
-            { name: 'Azul',          text: '#1B3A8F', bg: '#DCEAFF', border: '#1B3A8F', hover: '#C6DBFF' },
-            { name: 'Rojo',          text: '#FFD3DB', bg: '#7A0E2D', border: '#FFD3DB', hover: '#650B25' },
-            { name: 'Verde',         text: '#D4F8E6', bg: '#0C2E24', border: '#D4F8E6', hover: '#08221B' },
-            { name: 'Púrpura',       text: '#4E1C74', bg: '#F3E7FF', border: '#4E1C74', hover: '#E4D0FA' },
-            { name: 'Índigo',        text: '#E1E7FF', bg: '#1B1848', border: '#E1E7FF', hover: '#131038' },
-            { name: 'Cereza',        text: '#FFA3BC', bg: '#5A2426', border: '#FFA3BC', hover: '#481C1E' },
-            { name: 'Musgo',         text: '#DCE8D6', bg: '#3F4332', border: '#DCE8D6', hover: '#4D5240' },
-            { name: 'Medianoche',    text: '#E6D6A8', bg: '#141B2E', border: '#E6D6A8', hover: '#202A44' },
-            { name: 'Menta rosada',  text: '#02634F', bg: '#F8D0DB', border: '#02634F', hover: '#EDBACA' },
-            { name: 'Café Crema',    text: '#FAD9CE', bg: '#6F4129', border: '#FAD9CE', hover: '#5E3621' },
-            { name: 'Lavanda azul',  text: '#EADFFF', bg: '#34497F', border: '#EADFFF', hover: '#3F5894' },
-            { name: 'Esmeralda',     text: '#0B3B2E', bg: '#D6F7E8', border: '#0B3B2E', hover: '#BEE8D3' },
-            { name: 'Zafiro',        text: '#2F4780', bg: '#E8DAFF', border: '#2F4780', hover: '#D5C2F5' },
-            { name: 'Amatista',      text: '#E2D4F2', bg: '#4A2B47', border: '#E2D4F2', hover: '#3A2138' },
-            { name: 'Arena',         text: '#3A2F28', bg: '#F5EDE4', border: '#3A2F28', hover: '#E8DFD4' },
-            { name: 'Niebla',        text: '#2A2E35', bg: '#E8ECEF', border: '#2A2E35', hover: '#D8DEE3' }
-        ];
+  const showSelect = function () {
+    if (selectedBot) return;
+    const logo = $('#splash .brand-logo');
+    const note = $('#splash .splash-note');
+    if (logo) logo.style.display = 'none';
+    if (note) note.style.display = 'none';
+    const sel = $('#bot-selector');
+    if (sel) {
+      sel.classList.add('show');
+      typeSelector(sel);
+    }
+    done = true;
+    const inp = $('#in');
+    if (inp) inp.focus();
+  };
 
-        let currentFont = 'Martian Mono';
-        const availableFonts = [
-            { name: 'Martian Mono',          kind: 'monospace' },
-            { name: 'IBM Plex Mono',         kind: 'monospace' },
-            { name: 'JetBrains Mono',        kind: 'monospace' },
-            { name: 'Montserrat',            kind: 'sans-serif' },
-            { name: 'Source Sans 3',         kind: 'sans-serif' },
-            { name: 'Work Sans',             kind: 'sans-serif' },
-            { name: 'DM Sans',               kind: 'sans-serif' },
-            { name: 'Nunito Sans',           kind: 'sans-serif' },
-            { name: 'Atkinson Hyperlegible', kind: 'sans-serif' },
-            { name: 'Lexend',                kind: 'sans-serif' },
-            { name: 'Andika',                kind: 'sans-serif' },
-            { name: 'Inter',                 kind: 'sans-serif' },
-            { name: 'Lora',                  kind: 'serif' },
-            { name: 'Merriweather',          kind: 'serif' }
-        ];
+  t1 = setTimeout(showSelect, reduce ? 600 : 4800);
+}
 
-        function applyFont() {
-            document.documentElement.style.setProperty('--mono', `"${currentFont}", ${availableFonts.find(f => f.name === currentFont).kind}`);
-            document.getElementById('e_display').style.fontFamily = `var(--mono)`;
-            document.querySelector('input[type="text"]').style.fontFamily = `var(--mono)`;
-            document.querySelectorAll('input[type="submit"], input[type="reset"]').forEach(el => {
-                el.style.fontFamily = `var(--mono)`;
-            });
-        }
+function showSelector() {
+  const splash = $('#splash');
+  if (!splash) return;
+  const old = $('#bot-selector');
+  if (old) old.remove();
 
-        function setFont(fontName) {
-            currentFont = fontName;
-            applyFont();
-        }
+  const selector = document.createElement('div');
+  selector.id = 'bot-selector';
+  selector.innerHTML =
+    '<div class="bot-block">' +
+      '<div class="bot-name">ELIZA</div>' +
+      '<div class="bot-desc">Parodia de una psicoterapeuta rogeriana (1966). Reformula lo que dices.</div>' +
+    '</div>' +
+    '<div class="bot-block">' +
+      '<div class="bot-name">PARRY</div>' +
+      '<div class="bot-desc">Simula una personalidad paranoide (1972). Mantiene estado interno.</div>' +
+    '</div>' +
+    '<div class="hint">Escribe <strong>X</strong> para ELIZA · <strong>Y</strong> para PARRY</div>' +
+    '<div class="cmds">En el chat: *limpiar reinicia la conversación</div>';
+  splash.appendChild(selector);
+}
 
-        function applyTheme(){
-            const t = themes[currentTheme];
-            document.documentElement.style.setProperty('--bg', t.bg);
-            document.documentElement.style.setProperty('--text', t.text);
-            document.documentElement.style.setProperty('--border', t.border);
-            document.documentElement.style.setProperty('--hover', t.hover);
-            document.body.style.background = t.bg;
-            applyFontSize();
-        }
+var selTimer = null;
+function typeSelector(sel) {
+  if (!sel) return;
+  clearTimeout(selTimer);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const walker = document.createTreeWalker(sel, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
 
-        function setTheme(i){ 
-            currentTheme = i; 
-            applyTheme(); 
-        }
+  const chars = [], blocks = [];
+  nodes.forEach(function (n) {
+    if (!n.nodeValue.trim()) return;
+    const block = n.parentNode.closest('.bot-name,.bot-desc,.hint,.cmds');
+    const frag = document.createDocumentFragment();
+    Array.prototype.forEach.call(n.nodeValue, function (ch) {
+      const s = document.createElement('span');
+      s.className = 'tc' + (reduce ? ' on' : '');
+      s.textContent = ch;
+      frag.append(s);
+      chars.push(s);
+      blocks.push(block);
+    });
+    n.replaceWith(frag);
+  });
+  if (reduce || !chars.length) return;
 
-        function applyFontSize(){
-            const s = fontSizes[fontSizeLevel];
- document.body.style.fontSize = s + 'px';
-            document.documentElement.style.setProperty('--ui-size', s + 'px');
-            
-            /* Logo scales with the size control but keeps its fixed typefaces */
-            document.querySelector('.logo').style.fontSize = (s * 1.35) + 'px';
-            
-            document.getElementById('e_display').style.fontSize = s + 'px';
+  var i = 0, prev = null;
+  const step = function () {
+    if (prev) prev.classList.remove('last');
+    const c = chars[i];
+    c.classList.add('on', 'last');
+    prev = c;
+    i++;
+    if (i >= chars.length) {
+      setTimeout(function () { c.classList.remove('last'); }, 700);
+      return;
+    }
+    var d = 20;
+    if (blocks[i] !== blocks[i - 1]) d = 340;
+    else if (/[.,]/.test(c.textContent)) d = 80;
+    selTimer = setTimeout(step, d);
+  };
+  selTimer = setTimeout(step, 350);
+}
 
-            document.querySelector('input[type="text"]').style.fontSize = (s * 1.05) + 'px';
-            document.querySelectorAll('input[type="submit"], input[type="reset"]').forEach(b => {
-                b.style.fontSize = (s * 0.95) + 'px';
-            });
-        }
+function animateTerminalIntro() {
+  const content = $('#content');
+  if (!content) return 0;
+  content.classList.remove('fast');
+  content.classList.add('go', 'typing');
 
-        function fontUp(){ 
-            if(fontSizeLevel < fontSizes.length-1){ 
-                fontSizeLevel++; 
-                applyFontSize(); 
-            } 
-        }
-        function fontDown(){ 
-            if(fontSizeLevel > 0){ 
-                fontSizeLevel--; 
-                applyFontSize(); 
-            } 
-        }
+  const banner = content.querySelector('.banner');
+  const lines = banner ? Array.prototype.slice.call(banner.querySelectorAll('span')) : [];
+  const info = content.querySelector('.info');
+  const infos = info ? Array.prototype.slice.call(info.querySelectorAll('.il')) : [];
 
-        /* Chat: burbujas (ELIZA anguloso/Kiki, tú redondeado/Bouba), respuestas que se escriben solas */
-        const WHO = { k: 'ELIZA', b: 'TÚ' };
-        const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
-        let busy = false;
-        const chatBox = () => document.getElementById('e_display');
-        function freeze(w){
-            chatBox().querySelectorAll('.sh.ch[data-who="' + w + '"]').forEach(svg => {
-                svg.classList.remove('ch'); svg.classList.add('st');
-                const p = svg.querySelector('path'); p.setAttribute('d', pathOf(w === 'k' ? KP : BP, 0)); p.removeAttribute('transform');
-            });
-        }
-        function addMsg(w){
-            freeze(w);
-            const row = document.createElement('div'); row.className = 'msg ' + (w === 'k' ? 'bot' : 'me');
-            row.innerHTML = '<div class="who"><svg class="sh ch" data-who="' + w + '" viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor"/></svg><span>' + WHO[w] + '</span></div><div class="bub"><div class="in"></div></div>';
-            chatBox().append(row);
-            row.scrollIntoView({ block: 'nearest', behavior: RM ? 'auto' : 'smooth' });
-            return row;
-        }
-        function typeInto(row, text, done){
-            const el = row.querySelector('.in');
-            if(RM){ el.classList.remove('cur'); el.textContent = text; if(done) done(); return; }
-            el.classList.add('cur');
-            const step = Math.max(10, Math.min(26, 1800 / Math.max(text.length, 1)));
-            let i = 0;
-            (function tick(){
-                el.textContent = text.slice(0, ++i);
-                if(i < text.length){ typingTimeout = setTimeout(tick, step); }
-                else { el.classList.remove('cur'); row.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); if(done) done(); }
-            })();
-        }
-        function greet(){ busy = true; typeInto(addMsg('k'), eliza.getInitial(), () => { busy = false; }); }
-        function elizaReset(){
-            clearTimeout(typingTimeout);
-            eliza.reset(); chatBox().innerHTML = ''; busy = false; greet();
-        }
-        function elizaStep(){
-            const f = document.forms.e_form;
-            const input = f.e_input.value.trim();
-            if(input && !busy){
-                busy = true;
-                addMsg('b').querySelector('.in').textContent = input;
-                const reply = addMsg('k'); reply.querySelector('.in').classList.add('cur');
-                typingTimeout = setTimeout(() => typeInto(reply, eliza.transform(input), () => { busy = false; }), 600 + Math.random() * 500);
-                f.e_input.value = '';
-            }
-            f.e_input.focus();
-        }
+  var delay = 180;
+  const typeLine = function (el) {
+    const text = el.textContent;
+    const chars = Math.max(1, text.length);
+    el.style.setProperty('--type-steps', chars);
+    el.style.setProperty('--type-duration', Math.max(.45, Math.min(1.8, chars * .035)) + 's');
+    el.style.animationDelay = delay + 'ms';
+    delay += Math.max(260, Math.min(850, chars * 35)) + 110;
+  };
+  lines.forEach(typeLine);
+  delay += 250;
+  infos.forEach(typeLine);
 
-        /* Símbolos Bouba/Kiki solo para el chat */
-        const ico = w => '<span class="mini"><svg class="sh ch" data-who="' + w + '" viewBox="0 0 100 100" aria-hidden="true"><path fill="currentColor"/></svg></span>';
-        const ELZ = ico('k') + '<strong>ELIZA:</strong> ';
-        const USR = ico('b') + '<strong>TÚ:</strong> ';
-        const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        const lerp = (a, b, k) => [a[0] + (b[0]-a[0])*k, a[1] + (b[1]-a[1])*k];
-        const pt = p => p[0].toFixed(1) + ' ' + p[1].toFixed(1);
-        const PA = [-135, -72, -20, 34, 93, 153].map(d => d*Math.PI/180);
-        const PL = [40.3, 45.2, 45.7, 42.2, 41.3, 42.5];
-        const CR = 38;
-        const PW = [.2, .19, .21, .2, .18, .21], BEND = .5;
-        function petal(i, side){
-            const a = PA[i], L = PL[i], w = L*PW[i], u = [Math.cos(a), Math.sin(a)], v = [-u[1], u[0]];
-            const q = (x, y) => { y += BEND*x*x; return [50 + u[0]*x*L + v[0]*y*w, 50 + u[1]*x*L + v[1]*y*w]; };
-            return side ? [q(1,0), q(1,1.35), q(.42,1.55), q(0,0)] : [q(0,0), q(.42,-1.55), q(1,-1.35), q(1,0)];
-        }
-        function arc(s, e){
-            const P0 = [50 + CR*Math.cos(s), 50 + CR*Math.sin(s)], P1 = [50 + CR*Math.cos(e), 50 + CR*Math.sin(e)];
-            const h = 4/3*Math.tan((e-s)/4)*CR;
-            return [P0, [P0[0] - h*Math.sin(s), P0[1] + h*Math.cos(s)], [P1[0] + h*Math.sin(e), P1[1] - h*Math.cos(e)], P1];
-        }
-        function pathOf(pairs, m){
-            let d = '';
-            pairs.forEach(([f, c], j) => {
-                const g = f.map((p, k) => lerp(p, c[k], m));
-                if(!j) d += 'M' + pt(g[0]);
-                d += 'C' + pt(g[1]) + ' ' + pt(g[2]) + ' ' + pt(g[3]);
-            });
-            return d + 'Z';
-        }
-        function boubaPairs(){
-            const out = [];
-            for(let i = 0; i < 6; i++){
-                const prev = i ? PA[i-1] : PA[5] - Math.PI*2, next = i < 5 ? PA[i+1] : PA[0] + Math.PI*2;
-                out.push([petal(i,0), arc((prev + PA[i])/2, PA[i])], [petal(i,1), arc(PA[i], (PA[i] + next)/2)]);
-            }
-            return out;
-        }
-        /* Kiki: estrella irregular de seis puntas (ángulos y radios tomados del dibujo), lados rectos */
-        const KA = [-89.7, -50, -32.4, 7, 32.5, 60, 94.6, 122.5, 151.1, 163.4, 209.3, 219.4].map(d => d*Math.PI/180);
-        const KR = [44.4, 15.7, 43.1, 27.7, 46, 14.4, 43.5, 17.8, 44, 21.3, 41.8, 15.4];
-        function kikiPairs(){
-            const P = KA.map((a, i) => [50 + KR[i]*Math.cos(a), 50 + KR[i]*Math.sin(a)]);
-            return P.map((p, i) => {
-                const q = P[(i+1) % 12], e = i < 11 ? KA[i+1] : KA[0] + Math.PI*2;
-                return [[p, lerp(p,q,1/3), lerp(p,q,2/3), q], arc(KA[i], e)];
-            });
-        }
-        const BP = boubaPairs(), KP = kikiPairs();
-        const shapePath = m => pathOf(BP, m);
-        const ease = x => x*x*(3-2*x);
-        const bloom = x => { const c = 1.9, t = x - 1; return 1 + (c+1)*t*t*t + c*t*t; };
-        function draw(p, m){ p.setAttribute('d', shapePath(m)); p.setAttribute('transform', 'rotate(' + (-m*40) + ' 50 50)'); }
-        function frame(t){
-            const u = (t/1000) % 12.4;
-            let P = BP, m = 0;
-            if(u < 2) m = 0;
-            else if(u < 3.2) m = ease((u-2)/1.2);                       // Bouba se cierra
-            else if(u < 3.7) m = 1;                                      // círculo
-            else if(u < 4.9){ P = KP; m = 1 - bloom((u-3.7)/1.2); }     // sale Kiki
-            else if(u < 7.4){ P = KP; m = 0; }
-            else if(u < 8.6){ P = KP; m = ease((u-7.4)/1.2); }          // Kiki se cierra
-            else if(u < 9.1){ P = KP; m = 1; }                           // círculo
-            else if(u < 10.3){ m = 1 - bloom((u-9.1)/1.2); }            // sale Bouba
-            const d = pathOf(P, m), tr = 'rotate(' + ((P === BP ? -40 : 40)*m) + ' 50 50)';
-            document.querySelectorAll('.sh:not(.st):not(.ch) path').forEach(p => { p.setAttribute('d', d); p.setAttribute('transform', tr); });
-            const own = v => v < 3.2 ? 0 : v < 4.2 ? ease(v-3.2) : v < 4.6 ? 1 : v < 5.8 ? 1 - bloom((v-4.6)/1.2) : 0;
-            const sec = t/1000, mb = own(sec % 6.4), mk = own((sec + 3.2) % 6.4);
-            const db = pathOf(BP, mb), dk = pathOf(KP, mk);
-            document.querySelectorAll('.sh.ch').forEach(svg => {
-                const k = svg.dataset.who === 'k', p = svg.querySelector('path');
-                p.setAttribute('d', k ? dk : db);
-                p.setAttribute('transform', 'rotate(' + ((k ? 40 : -40) * (k ? mk : mb)) + ' 50 50)');
-            });
-            requestAnimationFrame(frame);
-        }
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    content.classList.add('reduced-motion');
+  }
+  return delay;
+}
 
-        function buildMenus(){
-            document.getElementById('menuTema').innerHTML = themes.map((t,i) =>
-                `<a href="#" onclick="setTheme(${i});return false">${t.name}</a>`).join('');
-            document.getElementById('menuFuente').innerHTML = availableFonts.map(f =>
-                `<a href="#" style="font-family:'${f.name}',${f.kind}" onclick="setFont('${f.name}');return false">${f.name}</a>`).join('');
-            requestAnimationFrame(frame);
-        }
+function typeFirstBotMessage(node) {
+  if (!node) return;
+  const tx = node.querySelector('.tx');
+  if (!tx || !tx.textContent) return;
+  const chars = Math.max(1, tx.textContent.length);
+  tx.style.setProperty('--type-steps', chars);
+  tx.style.setProperty('--type-duration', Math.max(.7, Math.min(2.4, chars * .045)) + 's');
+  tx.classList.add('is-typing');
+  node.classList.add('typing-line');
+}
 
-        function runIntro(){
-            const el = document.getElementById('intro');
-            const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-            const end = () => { el.classList.add('out'); setTimeout(() => el.remove(), 1300); };
-            el.onclick = end;
-            requestAnimationFrame(() => el.classList.add('ready'));
-            setTimeout(end, reduced ? 1200 : 5600);
-        }
+function startSelectedBot() {
+  clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(selTimer);
 
-        function toggleMenu(id){
-            const m = document.getElementById(id);
-            m.style.display = m.style.display === 'block' ? 'none' : 'block';
-            document.querySelectorAll('.dropdown-content').forEach(o => {
-                if(o !== m) o.style.display = 'none';
-            });
-            m.style.left = '';
-            if(m.style.display === 'block'){
-                const over = m.getBoundingClientRect().right - (document.documentElement.clientWidth - 10);
-                if(over > 0) m.style.left = (-over) + 'px';
-            }
-        }
+  const splash = $('#splash'), content = $('#content');
+  if (!splash || !content) return;
 
-        window.onclick = e => {
-            if(!e.target.matches('.menu-item')){
-                document.querySelectorAll('.dropdown-content').forEach(m => m.style.display = 'none');
-            }
-        };
-    </script>
+  const inp = $('#in');
+  if (inp) {
+    inp.placeholder = 'Escribe aquí…  (*limpiar)';
+    inp.focus();
+  }
+
+  splash.classList.add('out');
+
+  setTimeout(function () {
+    splash.style.display = 'none';
+    content.hidden = false;
+    content.classList.add('go');
+
+    const banner = document.querySelector('.banner');
+    const info = document.querySelector('.info');
+
+    if (selectedBot === 'parry') {
+      if (banner) {
+        banner.setAttribute('aria-label', 'PARRY');
+        banner.innerHTML =
+          '<span>PPPPPP   AAA   RRRRR   RRRRR   Y   Y</span>' +
+          '<span>P     P A   A  R    R  R    R   Y Y </span>' +
+          '<span>PPPPPP  AAAAA  RRRRR   RRRRR     Y  </span>' +
+          '<span>P       A   A  R  R    R  R      Y  </span>' +
+          '<span>P       A   A  R   RR  R   RR    Y  </span>';
+      }
+      if (info) {
+        info.innerHTML =
+          '<span class="il">PARRY es un chatbot histórico creado por Kenneth Colby en 1972.</span>' +
+          '<span class="il">Intentaba simular una personalidad paranoide mediante reglas y un estado interno.</span>' +
+          '<span class="il">Esta página implementa una recreación propia inspirada en esos conceptos.</span>' +
+          '<span class="il">No es una reproducción del código histórico original.</span>';
+      }
+    } else {
+      if (banner) {
+        banner.setAttribute('aria-label', 'ELIZA');
+        banner.innerHTML =
+          '<span>EEEEEE  LL      IIII  ZZZZZZZ   AAAAA</span>' +
+          '<span>EE      LL       II       ZZ   AA   AA</span>' +
+          '<span>EEEEE   LL       II      ZZZ   AAAAAAA</span>' +
+          '<span>EE      LL       II     ZZ     AA   AA</span>' +
+          '<span>EEEEEE  LLLLLL  IIII  ZZZZZZZ  AA   AA</span>';
+      }
+      if (info) {
+        info.innerHTML =
+          '<span class="il">ELIZA es la parodia de una psicoterapeuta rogeriana.</span>' +
+          '<span class="il">El programa original lo escribió Joseph Weizenbaum en 1966.</span>' +
+          '<span class="il">Esta implementación es de Norbert Landsteiner (mass:werk), 2005.</span>' +
+          '<span class="il">Traducida y ampliada al español para el Proyecto ELIZA.</span>';
+      }
+    }
+
+    const typingDuration = animateTerminalIntro();
+    restart(false);
+
+    const firstMessage = document.querySelector('#log .bot:last-child');
+    if (firstMessage) {
+      setTimeout(function () { typeFirstBotMessage(firstMessage); }, typingDuration + 180);
+    }
+  }, 450);
+}
+
+window.onload = function () {
+  showSelector();
+  intro();
+};
+</script>
 </head>
-
-<body onload="buildMenus(); runIntro(); applyTheme(); applyFontSize(); applyFont(); setTimeout(elizaReset,120)">
-
-<div class="menubar">
-    <a class="barlogo" href="https://proyectoeliza.js.org/" title="Proyecto Eliza" aria-label="Proyecto Eliza"><span class="logo-p">P</span><span class="logo-e">E</span></a>
-    <div class="menu">
-        <span class="menu-item" onclick="toggleMenu('menuArchivo')">Menú</span>
-        <div id="menuArchivo" class="dropdown-content">
-            <a href="https://proyectoeliza.js.org/">Inicio</a>
-            <a href="https://proyectoeliza.js.org/acerca-de-eliza/">Acerca de Eliza</a>
-            <a href="#" onclick="elizaReset();return false">Nueva conversación</a>
-            <a href="mailto:aysermeno@outlook.com">Contacto</a>
-            <a href="https://proyectoeliza.js.org/terminal/">Terminal</a>
-                        <a href="https://proyectoeliza.js.org/editor/">Editor</a>
+<body>
+<main>
+  <div id="stage">
+    <div class="term" id="term">
+      <div class="tools">
+        <button type="button" class="pe" onclick="toggleFullscreen()" title="Pantalla completa" aria-label="Pantalla completa">
+          <span class="logo-p">P</span><span class="logo-e">E</span>
+        </button>
+        <div class="tools-right">
+          <button type="button" onclick="zoom(1)" aria-label="Aumentar tamaño">[+Aa]</button>
+          <button type="button" onclick="zoom(-1)" aria-label="Reducir tamaño">[-Aa]</button>
         </div>
-    </div>
+      </div>
 
-    <div class="menu">
-        <span class="menu-item" onclick="toggleMenu('menuTema')">Tema</span>
-        <div id="menuTema" class="dropdown-content"></div>
-    </div>
+      <div id="splash">
+        <p class="brand-logo" aria-label="Proyecto Eliza">
+          <span class="bl-part" aria-hidden="true"><span class="bl-initial">P</span><span class="bl-rest">royecto</span></span>
+          <span class="bl-gap" aria-hidden="true"></span>
+          <span class="bl-part" aria-hidden="true"><span class="bl-initial">E</span><span class="bl-rest">liza</span></span>
+        </p>
+        <p class="splash-note">Una versión ampliada y en español de ELIZA. También PARRY, y un editor para crear tu propio guion.</p>
+      </div>
 
-    <div class="menu">
-        <span class="menu-item" onclick="toggleMenu('menuFuente')">Fuente</span>
-        <div id="menuFuente" class="dropdown-content"></div>
-    </div>
-
-    <div class="menu">
-        <span class="menu-item" onclick="fontDown()">Aa-</span>
-        <span class="menu-item" onclick="fontUp()">Aa+</span>
-    </div>
-</div>
-
-<div class="container">
-    <h1 class="logo">ELIZA</h1>
-
-    <form name="e_form" onsubmit="elizaStep();return false">
-        <div id="e_display" aria-live="polite"></div>
-        <div class="composer">
-            <input type="text" name="e_input" placeholder="Escribe aquí..." autocomplete="off" aria-label="Tu mensaje">
-            <button class="send" aria-label="Enviar"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+      <div id="content" hidden>
+        <div class="rule r1" aria-hidden="true">============================================================================================================================================</div>
+        <pre class="banner" id="banner" aria-label="ELIZA"><span>EEEEEE  LL      IIII  ZZZZZZZ   AAAAA</span><span>EE      LL       II       ZZ   AA   AA</span><span>EEEEE   LL       II      ZZZ   AAAAAAA</span><span>EE      LL       II     ZZ     AA   AA</span><span>EEEEEE  LLLLLL  IIII  ZZZZZZZ  AA   AA</span></pre>
+        <div class="rule r2" aria-hidden="true">============================================================================================================================================</div>
+        <div class="info" id="engineInfo">
+          <span class="il">ELIZA es la parodia de una psicoterapeuta rogeriana.</span>
+          <span class="il">El programa original lo escribió Joseph Weizenbaum en 1966.</span>
+          <span class="il">Esta implementación es de Norbert Landsteiner (mass:werk), 2005.</span>
+          <span class="il">Traducida y ampliada al español para el Proyecto ELIZA.</span>
         </div>
-        <button type="button" class="reset" onclick="elizaReset()">Restablecer</button>
+        <div id="log" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <form class="bar" onsubmit="send(event)">
+      <input id="in" type="text" autocomplete="off" aria-label="Tu mensaje" placeholder="Escribe aquí…">
+      <button type="submit">Enviar</button>
+      <button type="button" onclick="if(selectedBot){restart(false,false)}else{location.reload()}">Reiniciar</button>
     </form>
+  </div>
 
-    <section class="about-chat" aria-label="Sobre ELIZA">
-        <p>ELIZA es un chatbot escrito en 1966 por Joseph Weizenbaum que parodia a un psicoterapeuta rogeriano. Funciona, en buena parte, respondiendo al paciente con preguntas que salen de reformular sus propias afirmaciones. Así, a la frase «Me duele la cabeza» el programa puede contestar «¿Por qué dices que te duele la cabeza?», y a «Mi madre me odia» podría responder «¿Quién más en tu familia te odia?». No entiende nada: solo simula escuchar.</p>
-        <p>Weizenbaum la desarrolló en el MIT entre 1964 y 1966. Quería mostrar lo superficial que puede ser la comunicación entre una persona y una máquina, pero muchos usuarios le atribuyeron comprensión y empatía, un fenómeno que hoy se conoce como efecto ELIZA. Eligió la entrevista rogeriana porque en ella el terapeuta puede no saber nada del mundo sin que resulte extraño.</p>
-        <p>Por dentro no hay inteligencia: hay un guion con palabras clave, patrones y respuestas. Por eso es tan limitada: no recuerda la conversación completa, no capta el sentido y puede fallar con frases que ninguna regla prevé. No da consejos y no sustituye a una profesional de la salud mental.</p>
-        <blockquote>La versión de mass:werk, elizabot.js (Norbert Landsteiner, 2005), corre completa en tu navegador, sin servidor. El motor busca palabras clave y cada una tiene un rango: gana la más importante. Una regla de descomposición parte la frase, una de reensamblado arma la respuesta y los pronombres se invierten (yo→tú, mi→tu). Si no reconoce nada, usa una frase neutra o retoma algo dicho antes. Todas esas reglas viven en un guion separado del motor; aquí el guion está ampliado y en español, pero el motor es el mismo.</blockquote>
-        
-    </section>
-</div>
+  <section class="doc">
+    <h2>Este proyecto</h2>
+    <p>Proyecto Eliza nace de la voluntad de hacer accesible, en español y con un guion más amplio, una de las piezas fundacionales de la inteligencia artificial conversacional. La página permite hablar con ELIZA de inmediato; además se entrega un archivo descargable para quien quiera ejecutarla y modificarla en local, y un editor propio en el sitio para ensayar personalidades sin tocar el motor. De forma experimental, la misma interfaz admite también a PARRY, con las limitaciones ya señaladas: no forma parte del paquete descargable ni del editor.</p>
+    <p class="center">
+      <a href="elizaespanol.zip" class="download-btn" download>Descargar elizaespanol.zip<br>
+      <small>index.html · elizabot.js · eliza-espanol.js</small></a>
+    </p>
 
-<footer class="site-foot">
-    <div class="brand"><span class="logo-proyecto">Proyecto</span> <span class="logo-eliza">Eliza</span></div>
-    <nav class="links">
-        <a href="https://proyectoeliza.js.org/editor/">[Editor]</a>
-        <a href="https://proyectoeliza.js.org/acerca-de-eliza/">[Acerca de Eliza]</a>
-        <a href="https://proyectoeliza.js.org/terminal/">[Terminal]</a>
-        <a href="mailto:aysermeno@outlook.com">[Contacto]</a>
-    </nav>
-    <p class="made">Hecho por Yared Sermeño</p>
+    <h2>Qué es ELIZA</h2>
+    <p>ELIZA es un programa de conversación escrito entre 1964 y 1966 por Joseph Weizenbaum en el Massachusetts Institute of Technology. Suele citarse como el primer chatbot: no porque pretendiera «pensar», sino porque por primera vez una persona podía intercambiar frases en lenguaje natural con una máquina y obtener respuestas que, a simple vista, parecían de alguien que escuchaba. Weizenbaum lo planteó como un experimento sobre lo poco que hace falta para sostener la ilusión de una conversación; no como un modelo de inteligencia.</p>
+    <p>El sistema no interpreta el sentido de lo que se le dice. Reconoce palabras clave, aplica plantillas que parten y reordenan la frase, e invierte pronombres para devolver una pregunta o un comentario que suena a diálogo. El nombre viene de Eliza Doolittle, el personaje de <em>Pygmalion</em> que aprende a hablar de otra manera: de forma parecida, el programa podía cargar distintos guiones y adoptar tonos distintos sin cambiar el motor.</p>
+
+    <h2>Cómo funcionaba el original</h2>
+    <p>Weizenbaum separó con claridad el <strong>motor</strong> —el algoritmo que procesa el texto— del <strong>guion</strong>, es decir, de los datos: claves, patrones y respuestas. Cada mensaje se normalizaba; se buscaba la palabra clave de mayor rango; una regla de descomposición cortaba la frase en trozos numerados; otra de reensamblado armaba la salida; y una tabla de transposición convertía «yo» en «tú», «mi» en «tu», y así sucesivamente. Si no había clave reconocible, el programa tiraba de una memoria breve o de una frase neutra del tipo «por favor, continúa».</p>
+    <p>El guion más conocido, DOCTOR, imitaba la terapia centrada en el cliente de Carl Rogers: el terapeuta no aconseja ni interpreta, solo refleja lo oído. Esa elección no fue casual. En una entrevista rogeriana quien pregunta puede no saber casi nada del mundo sin que resulte extraño; así Weizenbaum evitaba dotar al programa de conocimiento general. Lo que sí observó, y le inquietó, es que mucha gente le atribuía comprensión y empatía de todos modos. Ese fenómeno se conoce como <strong>efecto ELIZA</strong>. Años después, en <em>Computer Power and Human Reason</em> (1976), argumentó que calcular y juzgar no son lo mismo, y que hay tareas que una máquina no debería asumir aunque pudiera ejecutarlas.</p>
+
+    <h2>mass:werk y la versión actual</h2>
+    <p>En 2005, Norbert Landsteiner (mass:werk) reescribió el motor en JavaScript: elizabot.js. Mantiene la arquitectura de Weizenbaum —claves con rango, descomposición, reensamblado, memoria— y añade preprocesado, sinónimos dentro de los patrones y frases de despedida. El guion sigue siendo un conjunto de datos aparte del motor; un fragmento tiene esta forma:</p>
+    <pre><code>["madre", 5, [
+  ["* mi madre *", [
+    "Háblame más de tu madre.",
+    "¿Cómo es tu relación con ella?"
+  ]],
+  ["*", ["Cuéntame más sobre tu familia."]]
+]]</code></pre>
+    <p>La versión que corre aquí usa ese mismo motor, sin tocarlo. Lo que cambia es el guion: ampliado y pasado al español. Traducir ELIZA no es sustituir palabras una a una; hay que ajustar la transposición de pronombres, la conjugación («estoy» pasa a «estás»), el género y el registro. Todo se ejecuta en el navegador, sin servidor.</p>
+
+    <h2>PARRY</h2>
+    <p>PARRY lo creó Kenneth Colby en 1972. A diferencia de ELIZA, no se limitaba a reformular lo que oía: intentaba simular una personalidad paranoide con reglas, creencias y un estado interno que influía en las respuestas posteriores. En su momento se llegó a confrontar una versión de DOCTOR con PARRY por red; fue uno de los primeros «encuentros» entre dos programas conversacionales.</p>
+    <p>La opción PARRY de esta página es una recreación propia, inspirada en esa idea de estado acumulado (sospecha, confianza, tensión), no una reproducción del código histórico. No se ofrece para editar ni para descargar desde aquí: está pensada solo como interlocutor experimental dentro de la interfaz.</p>
+  </section>
+</main>
+
+<footer>
+  <div class="brand"><span>Proyecto</span> <span>Eliza</span></div>
+  <nav class="links" aria-label="Enlaces">
+    <a href="https://proyectoeliza.js.org/editor/">[Editor]</a>
+    <a href="mailto:aysermeno@outlook.com">[Contacto]</a>
+  </nav>
+  <p class="made">Hecho por Yared Sermeño</p>
 </footer>
-
-<div id="intro" aria-label="Proyecto Eliza">
-    <div class="intro-logo" aria-hidden="true">
-        <span class="intro-part"><span class="intro-initial">P</span><span class="intro-rest">royecto</span></span>
-        <span>&nbsp;</span>
-        <span class="intro-part"><span class="intro-initial">E</span><span class="intro-rest">liza</span></span>
-    </div>
-</div>
 </body>
 </html>
