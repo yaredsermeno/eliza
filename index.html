@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,153 +8,230 @@
 <link rel="icon" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bytesized&family=Martian+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bytesized&family=Martian+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+/* Preferencias de la PÁGINA (independientes de la terminal), aplicadas antes de pintar */
+(function(){
+  var t = 'light', fs = 2, sizes = [11,12,13,14,15,16,17,18];
+  try {
+    var s = localStorage.getItem('pe-page-theme'); if (s === 'light' || s === 'dark') t = s;
+    var f = parseInt(localStorage.getItem('pe-page-fs'), 10); if (f >= 0 && f < sizes.length) fs = f;
+  } catch(e){}
+  var d = document.documentElement;
+  d.setAttribute('data-theme', t);
+  d.setAttribute('data-fs', fs);
+  d.style.setProperty('--page-fs', sizes[fs] + 'px');
+  d.classList.add('js');
+})();
+</script>
 <script src="elizabot.js"></script>
 <script src="espanol.js"></script>
 <script src="parry.js"></script>
 <style>
 :root {
-  --a: #362ABA;
-  --b: #897CE5;
-  --page-bg: var(--b);
-  --page-fg: var(--a);
-  --term-bg: var(--a);
-  --term-fg: var(--b);
-  --term-border: var(--b);
-  --muted: color-mix(in srgb, var(--page-fg) 55%, transparent);
-  --line: color-mix(in srgb, var(--page-fg) 35%, transparent);
+  --mono: 'Martian Mono', monospace;
+  --pix: 'Bytesized', monospace;
+  --pad: clamp(14px, 3vw, 28px);
+}
+/* Oscuro (por defecto). La terminal define sus propias variables, así que no depende de la página. */
+:root, #stage[data-theme="dark"] {
+  --bg: #151517;
+  --fg: #ECE9E2;
+  --raised: #1C1C1E;
+  --hover: #242427;
+  --soft: #A8A49A;
+  --faint: #7A766C;
+  --line: rgba(236,233,226,0.14);
+  --code: #1A1A1C;
+  color-scheme: dark;
+}
+:root[data-theme="light"], #stage[data-theme="light"] {
+  --bg: #F6F4EF;
+  --fg: #1A1A1C;
+  --raised: #FFFFFF;
+  --hover: #E6E2D8;
+  --soft: #5C584F;
+  --faint: #9A958A;
+  --line: rgba(26,26,28,0.13);
+  --code: #EFECE6;
+  color-scheme: light;
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; scroll-padding-top: 3.6rem; }
 body {
-  margin: 0;
-  background: var(--page-bg);
-  color: var(--page-fg);
-  font: 11px/1.6 'Martian Mono', monospace;
+  font-family: var(--mono);
+  font-size: var(--page-fs, 13px);
+  line-height: 1.6;
+  background: var(--bg);
+  color: var(--fg);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   transition: background .25s ease, color .25s ease;
 }
-::selection { background: var(--page-fg); color: var(--page-bg); }
+::selection { background: var(--fg); color: var(--bg); }
+a { color: inherit; text-decoration: none; }
+a:hover, a:focus { text-decoration: none; }
 
-main { flex: 1; width: 100%; padding: 28px 14px 24px; }
-#stage {
-  width: min(100%, 46em);
-  margin: 0 auto;
-}
-#stage:fullscreen,
-#stage:-webkit-full-screen {
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  margin: 0;
-  padding: 1.2em;
-  background: var(--page-bg);
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-#stage:fullscreen .term,
-#stage:-webkit-full-screen .term {
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  max-width: none;
-  overflow: auto;
-}
-#stage:fullscreen .bar,
-#stage:-webkit-full-screen .bar {
-  width: 100%;
-  max-width: none;
-  margin-top: .7em;
-}
-
-.term, .bar { width: 100%; margin: 0 auto; }
-
-.term {
-  background: var(--term-bg);
-  color: var(--term-fg);
-  border: 1px solid var(--term-border);
-  min-height: 24em;
-  padding: .6em .8em 1em;
-  transition: background .25s ease, color .25s ease, border-color .25s ease;
-}
-
-.tools {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1em;
-  margin-bottom: .4em;
-}
-.tools .pe {
+/* ─── Logo PE: solo letras, sin cajas ─── */
+.pe {
   display: inline-grid;
   grid-template-columns: auto auto;
   grid-template-rows: auto auto;
-  font-family: 'Bytesized', monospace;
-  font-size: 1.25em;
+  font-family: var(--pix);
+  font-size: 1.3em;
   line-height: 1;
-  color: color-mix(in srgb, var(--term-fg) 55%, transparent);
-  user-select: none;
-  cursor: pointer;
+  color: var(--fg);
   background: none;
   border: 0;
   padding: 0;
-  text-decoration: none !important;
+  cursor: pointer;
+  text-decoration: none;
   -webkit-tap-highlight-color: transparent;
-}
-.tools .pe:hover,
-.tools .pe:focus,
-.tools .pe:active {
-  color: var(--term-fg);
-  text-decoration: none !important;
   outline: 0;
 }
-.tools .pe .logo-p,
-.tools .pe .logo-e {
+.pe .logo-p, .pe .logo-e {
   font-weight: 400;
   display: grid;
   place-items: center;
-  padding: 0.12em 0.18em;
-  text-decoration: none !important;
+  padding: .12em .18em;
+  background: none;
+  color: inherit;
 }
-.tools .pe .logo-p { grid-column: 1; grid-row: 1; }
-.tools .pe .logo-e { grid-column: 2; grid-row: 2; }
-.tools .tools-right { display: flex; gap: 1em; }
-.tools .tools-right button {
+.pe .logo-p { grid-column: 1; grid-row: 1; }
+.pe .logo-e { grid-column: 2; grid-row: 2; }
+.pe:hover { opacity: .7; }
+
+/* ─── Barra de menú ─── */
+.menubar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--bg);
+  border-bottom: 1px solid var(--fg);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 18px;
+  padding: 6px var(--pad);
+  min-height: 2.5rem;
+  font-size: .92em;
+  user-select: none;
+  transition: background .25s ease;
+}
+.menubar .spacer { flex: 1 1 auto; min-width: 8px; }
+.menubar a.nav { color: var(--soft); padding: 0 2px; }
+.menubar a.nav:hover { color: var(--fg); }
+.menubar a.nav.on { color: var(--fg); font-weight: 600; }
+.menubar .group { display: flex; align-items: center; gap: .9em; }
+.tool {
+  background: none;
+  border: 0;
+  padding: 0 2px;
+  font: inherit;
+  color: var(--fg);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tool:hover { opacity: .65; }
+
+/* ─── Marquesina ─── */
+.ticker {
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+  color: var(--soft);
+  font-size: .78em;
+  letter-spacing: .03em;
+  padding: .5em 0;
+  white-space: nowrap;
+}
+.ticker-track { display: flex; width: max-content; animation: tick 80s linear infinite; }
+.ticker:hover .ticker-track { animation-play-state: paused; }
+@keyframes tick { to { transform: translateX(-50%); } }
+
+/* ─── Página ─── */
+.page { width: min(100%, 72em); margin: 0 auto; padding: 0 var(--pad); }
+main { flex: 1; }
+
+/* ─── Terminal: cuadro simple, con tema y tamaño propios ─── */
+.chat { padding-top: clamp(18px, 4vw, 36px); }
+#stage {
+  font-size: 12px;
+  background: var(--bg);
+  color: var(--fg);
+}
+.frame {
+  border: 1px solid var(--fg);
+  display: flex;
+  flex-direction: column;
+  height: clamp(440px, 74vh, 700px);
+  background: var(--bg);
+}
+#stage:fullscreen, #stage:-webkit-full-screen {
+  width: 100%;
+  height: 100%;
+  padding: 1.2em;
+  display: flex;
+  flex-direction: column;
+}
+#stage:fullscreen .frame, #stage:-webkit-full-screen .frame { height: 100%; flex: 1; }
+
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .3em 1em;
+  padding: .5em .8em;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.tools .lab { font-size: .85em; color: var(--soft); letter-spacing: .04em; }
+.tools-right { display: flex; align-items: center; gap: .9em; }
+.tools-right button {
   background: none;
   border: 0;
   padding: 0;
-  color: color-mix(in srgb, var(--term-fg) 55%, transparent);
   font: inherit;
+  color: var(--soft);
   cursor: pointer;
+  white-space: nowrap;
 }
-.tools .tools-right button:hover { color: var(--term-fg); text-decoration: underline; }
+.tools-right button:hover { color: var(--fg); }
 
-/* —— Splash / entrada —— */
+.term {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: .9em 1em 1.2em;
+  scrollbar-width: thin;
+  scrollbar-color: var(--faint) transparent;
+}
+
+/* Splash */
 #splash {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.4em;
+  gap: 1.5em;
   min-height: 18em;
+  min-height: 100%;
   transition: opacity .5s ease;
 }
 #splash.out { opacity: 0; pointer-events: none; }
-
 #splash .brand-logo {
   margin: 0;
   display: flex;
   align-items: baseline;
   white-space: nowrap;
-  font-family: 'Bytesized', monospace;
+  font-family: var(--pix);
   font-weight: 400;
   font-size: clamp(1.9rem, 7.5vw, 3rem);
   letter-spacing: .1em;
   line-height: 1;
-  color: var(--term-fg);
+  color: var(--fg);
 }
 .bl-part { display: inline-flex; align-items: baseline; overflow: hidden; }
 .bl-initial { flex: none; }
@@ -169,20 +246,13 @@ main { flex: 1; width: 100%; padding: 28px 14px 24px; }
 }
 .bl-part:last-child .bl-rest { animation-delay: .7s; }
 @keyframes brandLoop {
-  0%, 10%  { max-width: 0; opacity: 0; transform: translateX(-.18em); }
-  30%, 62% { max-width: 5.2em; opacity: 1; transform: translateX(0); }
-  82%, 100%{ max-width: 0; opacity: 0; transform: translateX(-.18em); }
+  0%, 10%   { max-width: 0; opacity: 0; transform: translateX(-.18em); }
+  30%, 62%  { max-width: 5.2em; opacity: 1; transform: translateX(0); }
+  82%, 100% { max-width: 0; opacity: 0; transform: translateX(-.18em); }
 }
+.splash-note { max-width: 30em; text-align: center; color: var(--soft); font-size: .95em; line-height: 1.7; margin: 0; }
 
-.splash-note {
-  max-width: 28em;
-  text-align: center;
-  opacity: .8;
-  font-size: .95em;
-  line-height: 1.7;
-  margin: 0;
-}
-
+/* Selector: solo texto, se elige escribiendo */
 #bot-selector {
   display: none;
   text-align: center;
@@ -193,15 +263,10 @@ main { flex: 1; width: 100%; padding: 28px 14px 24px; }
 }
 #bot-selector.show { display: block; opacity: 1; }
 #bot-selector .bot-block { margin: 0 0 1.1em; }
-#bot-selector .bot-name { font-weight: 600; letter-spacing: .06em; margin-bottom: .25em; }
+#bot-selector .bot-name { font-weight: 600; letter-spacing: .06em; margin-bottom: .25em; display: inline-block; padding: .08em .2em; }
 #bot-selector .bot-desc { opacity: .75; font-size: .95em; }
-#bot-selector .hint { margin-top: 1.3em; opacity: .7; font-size: .9em; }
-#bot-selector .cmds {
-  margin-top: 1em;
-  opacity: .55;
-  font-size: .82em;
-  line-height: 1.6;
-}
+#bot-selector .hint { margin-top: 1.3em; opacity: .75; font-size: .9em; }
+#bot-selector .cmds { margin-top: 1em; opacity: .55; font-size: .82em; line-height: 1.6; }
 #bot-selector .tc { visibility: hidden; }
 #bot-selector .tc.on { visibility: visible; }
 #bot-selector .tc.last { position: relative; }
@@ -213,31 +278,13 @@ main { flex: 1; width: 100%; padding: 28px 14px 24px; }
   animation: bl 1s steps(1) infinite;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .bl-rest {
-    animation: none;
-    max-width: 5.2em;
-    opacity: 1;
-    transform: none;
-  }
-  #bot-selector { transition: none; }
-}
-
-/* —— Terminal content —— */
-.rule { white-space: nowrap; overflow: hidden; }
-.banner {
-  margin: .3em 0;
-  font: inherit;
-  line-height: 1.2;
-  padding-left: 7ch;
-  overflow: hidden;
-}
+/* Contenido de terminal */
+.rule { height: 0; border-top: 1px solid var(--faint); }
+.banner { margin: .5em 0; font: inherit; line-height: 1.2; padding-left: 2ch; overflow: hidden; }
 .banner span { display: block; white-space: pre; }
-.info { margin: .7em 0 1.3em; padding-left: 3ch; }
+.info { margin: .7em 0 1.3em; padding-left: 2ch; color: var(--soft); }
 .il { display: block; }
-#content .rule,
-#content .banner span,
-#content .il { opacity: 0; }
+#content .rule, #content .banner span, #content .il { opacity: 0; }
 
 @keyframes fi { to { opacity: 1; } }
 @keyframes terminalType {
@@ -254,178 +301,388 @@ main { flex: 1; width: 100%; padding: 28px 14px 24px; }
 .go.typing .il {
   animation: terminalType var(--type-duration, 1.2s) steps(var(--type-steps, 80), end) forwards;
 }
-#log .typing-line .tx {
-  display: inline-block;
-  opacity: 1;
-  white-space: pre-wrap;
-  overflow: hidden;
-  vertical-align: bottom;
-  clip-path: inset(0 100% 0 0);
-}
-#log .typing-line .tx.is-typing {
-  animation: terminalType var(--type-duration, 1.4s) steps(var(--type-steps, 80), end) forwards;
-}
 .reduced-motion .go.typing .banner span,
-.reduced-motion .go.typing .il,
-.reduced-motion #log .typing-line .tx.is-typing {
-  animation: none !important;
-  clip-path: none !important;
-}
+.reduced-motion .go.typing .il { animation: none !important; clip-path: none !important; }
 
-.ln { display: flex; gap: 1ch; margin: 0 0 .5em; }
-.pr { flex: none; }
+.ln { display: flex; gap: 1ch; margin: 0 0 .65em; }
+.pr { flex: none; font-weight: 600; }
+.ln.me .pr, .ln.me .tx { color: var(--soft); }
 .tx { white-space: pre-wrap; overflow-wrap: anywhere; }
 .cur::after { content: "\258B"; animation: bl 1s steps(1) infinite; }
 @keyframes bl { 50% { opacity: 0; } }
 
+/* Barra de entrada */
 .bar {
   display: flex;
-  gap: .6em;
-  margin-top: .7em;
   align-items: center;
+  gap: .5em;
+  border-top: 1px solid var(--line);
+  padding: .5em .6em .5em .9em;
+  flex-shrink: 0;
 }
+.bar .gt { color: var(--soft); flex: none; }
 .bar input {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
-  margin-right: 2em;
-  background: var(--term-bg);
-  color: var(--term-fg);
-  border: 1px solid var(--term-border);
-  border-radius: 2px;
-  padding: .3em .5em;
+  background: transparent;
+  border: 0;
+  color: var(--fg);
   font: inherit;
-  caret-color: var(--term-fg);
+  padding: .35em 0;
   outline: 0;
-  transition: background .25s ease, color .25s ease, border-color .25s ease;
+  caret-color: var(--fg);
+  overflow-x: auto;
+  white-space: nowrap;
 }
-.bar input:focus { border-color: var(--term-fg); }
-.bar input::placeholder { color: color-mix(in srgb, var(--term-fg) 45%, transparent); }
-.bar button {
+.bar input::placeholder { color: var(--faint); }
+.bar .btn { flex: none; }
+.bar .kb-toggle {
+  flex: none;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--soft);
+  padding: .3em .4em;
+  cursor: pointer;
+  line-height: 0;
+}
+.bar .kb-toggle:hover, .bar .kb-toggle.on {
+  color: var(--fg);
+  border-color: var(--fg);
+}
+.bar .kb-toggle svg {
+  width: 1.35em;
+  height: 1.05em;
+  display: block;
+  shape-rendering: crispEdges;
+}
+#stage:fullscreen .bar .kb-toggle, #stage:-webkit-full-screen .bar .kb-toggle { display: inline-flex; }
+#stage.native-kb .pixel-keyboard { display: none !important; }
+#stage:fullscreen.native-kb .pixel-keyboard,
+#stage.native-kb:-webkit-full-screen .pixel-keyboard { display: none !important; }
+.btn {
   font: inherit;
-  background: var(--term-bg);
-  color: var(--term-fg);
-  border: 1px solid var(--term-border);
-  border-radius: 3px;
-  padding: .2em .7em;
+  font-size: .9em;
+  padding: .4em .9em;
+  border: 1px solid var(--fg);
+  background: var(--bg);
+  color: var(--fg);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: background .15s ease, color .15s ease;
+}
+.btn:hover { background: var(--fg); color: var(--bg); }
+.btn.primary { background: var(--fg); color: var(--bg); }
+.btn.primary:hover { background: var(--bg); color: var(--fg); }
+@media (max-width: 600px) {
+  .bar { gap: .4em; padding: .45em .5em .45em .7em; }
+  .bar input { font-size: 16px; }
+  .bar .btn { padding: .4em .7em; font-size: .85em; }
+  .tools .lab { display: none; }
+}
+
+/* ─── Manual (secciones) ─── */
+.manual { margin-top: clamp(3em, 8vw, 6em); }
+.sec {
+  display: grid;
+  grid-template-columns: minmax(9em, 14em) minmax(0, 1fr);
+  gap: 1.2em var(--pad);
+  border-top: 1px solid var(--fg);
+  padding: 1.6em 0 3em;
+}
+.sec-head { position: sticky; top: 3.7rem; align-self: start; }
+.sec-head .num { font-family: var(--pix); font-size: 2.6em; line-height: 1; display: block; margin-bottom: .25em; }
+.sec-head h2 { font-size: .9em; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; line-height: 1.35; }
+.sec-head .mini { margin-top: 1.1em; display: flex; flex-direction: column; }
+.sec-head .mini a { color: var(--soft); font-size: .8em; line-height: 1.95; }
+.sec-head .mini a:hover { color: var(--fg); }
+.sec.wide { grid-template-columns: 1fr; }
+.sec.wide .sec-head { position: static; display: flex; align-items: baseline; gap: 1em; }
+.sec.wide .sec-head .num { margin: 0; }
+.sec-body p { margin: 0 0 1.3em; max-width: 68ch; line-height: 1.85; font-size: .98em; }
+.sec-body p.lead { font-size: 1.2em; line-height: 1.55; font-weight: 500; }
+.sec-body h3 {
+  font-size: .95em;
+  font-weight: 600;
+  letter-spacing: .04em;
+  margin: 2.4em 0 .8em;
+  display: flex;
+  gap: .9em;
+  align-items: baseline;
+  scroll-margin-top: 4rem;
+}
+.sec-body h3 .sn { color: var(--faint); font-weight: 400; }
+.sec-body em { font-style: italic; }
+.sec-body strong { font-weight: 600; }
+.sec-body code { background: var(--code); border: 1px solid var(--line); padding: .02em .35em; font-size: .92em; }
+.ref { color: var(--faint); font-size: .8em; letter-spacing: .02em; white-space: nowrap; }
+@media (max-width: 760px) {
+  .sec { grid-template-columns: 1fr; }
+  .sec-head { position: static; display: flex; flex-wrap: wrap; align-items: baseline; gap: .3em 1em; }
+  .sec-head .num { margin: 0; }
+  .sec-head .mini { display: none; }
+}
+
+.pull {
+  font-size: 1.45em;
+  line-height: 1.4;
+  font-weight: 600;
+  border-left: 3px solid var(--fg);
+  padding-left: 1em;
+  margin: 1.4em 0 1.6em;
+  max-width: 34ch;
+}
+pre.code {
+  background: var(--code);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--fg);
+  padding: 1em 1.1em;
+  overflow-x: auto;
+  font: inherit;
+  font-size: .88em;
+  line-height: 1.55;
+  margin: 1.2em 0 1.6em;
+}
+ul.plain { list-style: none; margin: 0 0 1.3em; max-width: 68ch; }
+ul.plain li { position: relative; padding-left: 2em; margin-bottom: .7em; line-height: 1.75; font-size: .98em; }
+ul.plain li::before { content: "—"; position: absolute; left: 0; color: var(--faint); }
+
+/* Módulos */
+.modules { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--fg); margin: 1.6em 0 .4em; }
+.mod {
+  display: flex;
+  flex-direction: column;
+  gap: .55em;
+  padding: 1.1em;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+  text-align: left;
+  border-right: 1px solid var(--fg);
+  transition: background .15s ease, color .15s ease;
+}
+.mod:last-child { border-right: 0; }
+.mod:hover, .mod:focus-visible { background: var(--fg); color: var(--bg); outline: 0; }
+.mod-k { font-size: .8em; opacity: .65; letter-spacing: .05em; }
+.mod-n { font-family: var(--pix); font-size: 2em; letter-spacing: .08em; line-height: 1; }
+.mod-d { font-size: .88em; line-height: 1.65; opacity: .85; flex: 1; }
+.mod-go { font-size: .82em; letter-spacing: .04em; margin-top: .4em; }
+@media (max-width: 760px) {
+  .modules { grid-template-columns: 1fr; }
+  .mod { border-right: 0; border-bottom: 1px solid var(--fg); }
+  .mod:last-child { border-bottom: 0; }
+}
+
+/* Trío (editor) */
+.trio { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--fg); margin: 1.6em 0 1.8em; }
+.trio > div { padding: 1.1em 1.1em 1.3em; border-right: 1px solid var(--fg); }
+.trio > div:last-child { border-right: 0; }
+.trio .n { font-family: var(--pix); font-size: 2.2em; line-height: 1; display: block; margin-bottom: .5em; }
+.trio h3 { margin: 0 0 .6em; font-size: .9em; text-transform: uppercase; letter-spacing: .06em; display: block; }
+.sec-body .trio p { font-size: .88em; line-height: 1.75; margin: 0; color: var(--soft); }
+@media (max-width: 760px) {
+  .trio { grid-template-columns: 1fr; }
+  .trio > div { border-right: 0; border-bottom: 1px solid var(--fg); }
+  .trio > div:last-child { border-bottom: 0; }
+}
+
+/* Pipeline */
+.pipe { border: 1px solid var(--fg); margin: 1.4em 0 1.8em; max-width: 46em; }
+.pipe-steps { display: grid; grid-template-columns: repeat(5, 1fr); border-bottom: 1px solid var(--fg); }
+.step {
+  font: inherit;
+  font-size: .8em;
+  background: var(--bg);
+  color: var(--fg);
+  border: 0;
+  border-right: 1px solid var(--fg);
+  padding: .7em .6em;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: .3em;
+  transition: background .15s ease, color .15s ease;
+}
+.step:last-child { border-right: 0; }
+.step b { font-family: var(--pix); font-weight: 400; font-size: 1.7em; line-height: 1; }
+.step:hover { background: var(--hover); }
+.step.on { background: var(--fg); color: var(--bg); }
+.pipe-view { padding: 1.1em 1.2em 1.3em; min-height: 13em; }
+.pipe-title { font-weight: 600; letter-spacing: .06em; text-transform: uppercase; font-size: .85em; margin-bottom: .8em; display: flex; justify-content: space-between; gap: 1em; }
+.pipe-title small { font-weight: 400; color: var(--faint); text-transform: none; letter-spacing: 0; }
+.pipe-code { background: var(--code); border: 1px solid var(--line); padding: .9em 1em; font: inherit; font-size: .9em; white-space: pre-wrap; margin-bottom: .9em; line-height: 1.6; }
+.sec-body .pipe-note { color: var(--soft); font-size: .92em; line-height: 1.7; margin: 0; max-width: 60ch; }
+@media (max-width: 600px) { .step span { display: none; } }
+
+/* Línea de tiempo */
+.tl-filter { display: flex; flex-wrap: wrap; gap: .4em; margin: 1.2em 0 2em; }
+.chip {
+  font: inherit;
+  font-size: .82em;
+  padding: .3em .85em;
+  border: 1px solid var(--fg);
+  background: var(--bg);
+  color: var(--fg);
   cursor: pointer;
   transition: background .15s ease, color .15s ease;
 }
-.bar button:hover {
-  background: var(--term-fg);
-  color: var(--term-bg);
-}
-
-/* —— Doc —— */
-.doc {
-  width: min(100%, 56em);
-  margin: 3.5em auto 0;
-  line-height: 1.75;
-  color: var(--page-fg);
-}
-.doc p { margin: 0 0 1.4em; }
-.doc h2 {
-  font-size: 1.15em;
-  margin: 2em 0 .7em;
-  padding-bottom: .3em;
-  border-bottom: 1px solid var(--line);
-}
-.doc code {
-  background: color-mix(in srgb, var(--page-fg) 8%, var(--page-bg));
-  padding: .05em .35em;
-}
-.doc pre {
-  background: color-mix(in srgb, var(--page-fg) 8%, var(--page-bg));
-  border: 1px solid var(--line);
-  padding: 1em;
-  overflow-x: auto;
-  font-size: .88em;
-  line-height: 1.5;
-  margin: 1.2em 0;
-}
-.doc pre code { padding: 0; background: none; }
-.doc blockquote {
+.chip:hover { background: var(--hover); }
+.chip.on { background: var(--fg); color: var(--bg); }
+.tl { list-style: none; border-left: 1px solid var(--fg); margin-left: .35em; max-width: 54em; }
+.tl li {
   position: relative;
-  margin: 0 0 1.4em;
-  padding-left: 1.7em;
+  display: grid;
+  grid-template-columns: 7.5em minmax(0, 1fr);
+  gap: .2em 1.2em;
+  padding: 0 0 2em 1.7em;
 }
-.doc blockquote::before {
-  content: "\201C";
-  position: absolute;
-  left: -.1em;
-  top: -.3em;
-  font-size: 3em;
-  line-height: 1;
-  color: var(--muted);
-}
-.doc .download-btn {
-  display: inline-block;
-  padding: .8em 1.6em;
-  color: var(--page-fg);
-  border: 2px solid var(--page-fg);
-  text-decoration: none;
-  margin: .5em 0 1em;
-}
-.doc .download-btn:hover {
-  background: var(--page-fg);
-  color: var(--page-bg);
-}
-.doc .center { text-align: center; }
-.doc ul { padding-left: 1.6em; }
-.doc li { margin-bottom: .5em; }
-
-/* —— Footer —— */
-footer {
-  border-top: 1px solid var(--line);
-  text-align: center;
-  padding: 2.4em 14px 2.8em;
-  color: var(--page-fg);
-  margin-top: 2em;
-}
-.brand {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: .4em;
-  font-family: 'Bytesized', monospace;
-  font-weight: 400;
-  font-size: 1.55em;
-  letter-spacing: .08em;
-  line-height: 1;
-}
-.links {
-  margin-top: 1.1em;
-  display: flex;
-  gap: .4em 1.4em;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-.links a {
-  color: var(--page-fg);
-  text-decoration: none;
-}
-.links a:hover { text-decoration: underline; }
-.made {
-  margin: 1.2em 0 0;
-  opacity: .65;
-  font-size: .85em;
+.tl li[hidden] { display: none; }
+.tl li::before { content: ""; position: absolute; left: -5px; top: .6em; width: 9px; height: 9px; background: var(--fg); }
+.tl li.key::before { left: -7px; top: .5em; width: 13px; height: 13px; }
+.tl .yr { font-family: var(--pix); font-size: 1.9em; line-height: 1.15; }
+.tl .what h3 { margin: 0 0 .35em; font-size: .92em; letter-spacing: .03em; display: block; }
+.tl .what p { margin: 0; max-width: 60ch; font-size: .88em; line-height: 1.75; color: var(--soft); }
+.tl .tag { display: inline-block; margin-bottom: .3em; font-size: .72em; letter-spacing: .06em; color: var(--faint); }
+@media (max-width: 600px) {
+  .tl li { grid-template-columns: 1fr; padding-left: 1.4em; }
 }
 
-@media (max-width: 520px) {
-  .bar { flex-wrap: wrap; }
-  .bar input { flex-basis: 100%; margin-right: 0; }
-  .banner { padding-left: 0; }
+/* Descarga */
+.files { border: 1px solid var(--fg); max-width: 46em; margin: 1.4em 0; }
+.files .cmd { padding: .6em 1em; border-bottom: 1px solid var(--line); color: var(--soft); font-size: .9em; }
+.files .file { display: grid; grid-template-columns: 5ch minmax(0, 17ch) 1fr; gap: 1em; padding: .55em 1em; border-bottom: 1px solid var(--line); font-size: .9em; }
+.files .file:last-child { border-bottom: 0; }
+.files .perm { color: var(--faint); }
+.files .desc { color: var(--soft); }
+@media (max-width: 600px) { .files .file { grid-template-columns: 1fr; gap: 0; } .files .perm { display: none; } }
+.dl-row { display: flex; flex-wrap: wrap; gap: .7em; align-items: center; margin-bottom: 1.2em; }
+
+/* Fuentes */
+ol.refs { padding-left: 2.6em; max-width: 72ch; font-size: .88em; line-height: 1.75; color: var(--soft); }
+ol.refs li { margin-bottom: .8em; padding-left: .3em; }
+ol.refs a { color: var(--fg); font-weight: 600; }
+ol.refs a::after { content: " [↗]"; font-family: var(--pix); font-size: 1.15em; font-weight: 400; }
+ol.refs a:hover { opacity: .65; }
+
+/* Aparición */
+.js .rv { opacity: 0; transform: translateY(10px); transition: opacity .6s ease, transform .6s ease; }
+.js .rv.in { opacity: 1; transform: none; }
+
+/* ─── Pie ─── */
+.foot { border-top: 1px solid var(--fg); text-align: center; padding: 2.4em 14px 2.2em; margin-top: 2em; }
+.foot .brand { font-family: var(--pix); font-weight: 400; font-size: clamp(1.8em, 7vw, 3.4em); letter-spacing: .08em; line-height: 1; }
+.foot nav { margin-top: 1.2em; display: flex; flex-wrap: wrap; gap: .3em 1.2em; justify-content: center; font-size: .85em; }
+.foot nav a { opacity: .75; }
+.foot nav a:hover { opacity: 1; }
+.foot .made { margin-top: 1.1em; font-size: .78em; opacity: .6; }
+
+@media (max-width: 600px) {
+  .menubar { position: static; gap: 5px 12px; font-size: .86em; }
+  html { scroll-padding-top: 1rem; }
 }
+@media (prefers-reduced-motion: reduce) {
+  .bl-rest { animation: none; max-width: 5.2em; opacity: 1; transform: none; }
+  .ticker-track { animation: none; }
+  #bot-selector { transition: none; }
+  .js .rv { opacity: 1; transform: none; transition: none; }
+}
+
+/* Teclado físico de la terminal: solo aparece en pantalla completa */
+.terminal-pe { font-family: var(--pix) !important; font-size: 1.25em !important; color: var(--fg) !important; padding: 0 .25em !important; }
+#stage:fullscreen .terminal-pe, #stage:-webkit-full-screen .terminal-pe { display: inline-grid; }
+.pixel-keyboard { display:none; background:#f4f4f2; color:#566a82; padding: .55rem; gap:.38rem; flex-shrink:0; font-family:var(--mono); }
+#stage:fullscreen .pixel-keyboard, #stage:-webkit-full-screen .pixel-keyboard { display:grid; }
+.key-row { display:flex; justify-content:center; gap:clamp(2px,.45vw,7px); width:100%; }
+.key-row button { flex:1 1 0; min-width:0; border:2px solid #566a82; border-bottom-width:5px; border-right-width:4px; background:#f7f7f4; color:#566a82; font-family:var(--mono); font-size:clamp(11px,1.8vw,20px); font-weight:400; line-height:1; min-height:clamp(26px,4.3vh,42px); padding:.25em .12em; cursor:pointer; box-shadow:inset 2px 2px 0 #fff; touch-action:manipulation; }
+.key-row button:active, .key-row button.key-active { transform:translate(1px,2px); border-bottom-width:3px; background:#dce1e6; }
+.key-row button .pixel-icon { display:block; width:1.25em; height:1.1em; margin:auto; shape-rendering:crispEdges; }
+.key-row .space-key { flex:4 1 0; }
+/* Fuera de pantalla completa no hay campo de escritura: la terminal invita a tocar PE. */
+.bar { display:none; }
+.start-hint { display:flex; align-items:center; gap:.6em; border-top:1px solid var(--line); padding:.75em .9em; color:var(--soft); font-family:var(--mono); font-size:.9em; }
+.start-hint .hint-mark { color:var(--fg); font-family:var(--pix); font-size:1.35em; flex:none; }
+#stage:fullscreen .bar, #stage:-webkit-full-screen .bar { display:flex; }
+#stage:fullscreen .start-hint, #stage:-webkit-full-screen .start-hint { display:none; }
+#stage:fullscreen .bar input, #stage:-webkit-full-screen .bar input { font-size:16px; }
+#stage:fullscreen, #stage:-webkit-full-screen { padding:0; gap:0; }
+#stage:fullscreen .frame, #stage:-webkit-full-screen .frame { height:auto; min-height:0; flex:1; }
+#stage:fullscreen .term, #stage:-webkit-full-screen .term { flex:1; }
+.bot-choices { display:flex; justify-content:center; gap:.7em; margin-top:1.2em; }
+.bot-choices button { font:inherit; color:var(--fg); background:transparent; border:1px solid var(--fg); padding:.65em 1em; cursor:pointer; }
+.bot-choices button:hover { background:var(--fg); color:var(--bg); }
+.bot-choices span { opacity:.55; margin-left:.8em; }
+#splash .brand-logo { animation: pePulse 5.2s steps(1,end) infinite; }
+@keyframes pePulse { 0%,100% { opacity:1; } 50% { opacity:.78; } }
+@media (max-width:520px) {
+  .pixel-keyboard { padding:.35rem; gap:.25rem; }
+  .key-row { gap:3px; }
+  .key-row button { min-height:clamp(27px,4.5vh,38px); font-size:clamp(10px,2.7vw,15px); border-width:2px; border-bottom-width:4px; }
+  #stage:fullscreen .tools { padding:.3em .5em; }
+  #stage:fullscreen .bar { flex-wrap:nowrap; gap:.35em; padding:.4em .45em .4em .65em; }
+  #stage:fullscreen .bar input { flex:1 1 0; min-width:0; }
+  #stage:fullscreen .bar .btn { padding:.35em .55em; font-size:.8em; }
+}
+
 </style>
 <script>
 const eliza = new ElizaBot();
 const $ = s => document.querySelector(s);
-const SZ = [9, 10, 11, 12, 13, 14, 16];
-let lvl = 2, rows = [], tm, ready = false, done = false, t1, t2, t3;
+const PSZ = [11, 12, 13, 14, 15, 16, 17, 18];   /* tamaños de la PÁGINA */
+const SZ = [10, 11, 12, 13, 14, 15, 17];        /* tamaños de la TERMINAL */
+let plvl = parseInt(document.documentElement.getAttribute('data-fs'), 10);
+if (isNaN(plvl)) plvl = 2;
+let lvl = 2, rows = [], tm, introTm, ready = false, done = false, t1, t2, t3;
 let selectedBot = null;
 
+function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+/* ─── PÁGINA: tema y tamaño propios ─── */
+function setPageMode(m) {
+  document.documentElement.setAttribute('data-theme', m);
+  store('pe-page-theme', m);
+  document.querySelectorAll('.page-toggle').forEach(function (b) {
+    const dark = m === 'dark';
+    b.textContent = dark ? '[m:c]' : '[m:o]';
+    b.title = dark ? 'Modo claro (página)' : 'Modo oscuro (página)';
+    b.setAttribute('aria-label', b.title);
+  });
+}
+function togglePageMode() {
+  setPageMode(document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+}
+function pageZoom(d) {
+  plvl = Math.min(PSZ.length - 1, Math.max(0, plvl + d));
+  document.documentElement.style.setProperty('--page-fs', PSZ[plvl] + 'px');
+  document.documentElement.setAttribute('data-fs', plvl);
+  store('pe-page-fs', plvl);
+}
+
+/* ─── TERMINAL: tema y tamaño propios ─── */
+function setTermMode(m) {
+  const st = document.getElementById('stage');
+  if (st) st.setAttribute('data-theme', m);
+  store('pe-term-theme', m);
+  document.querySelectorAll('.term-toggle').forEach(function (b) {
+    const dark = m === 'dark';
+    b.textContent = dark ? '[m:c]' : '[m:o]';
+    b.title = dark ? 'Modo claro (terminal)' : 'Modo oscuro (terminal)';
+    b.setAttribute('aria-label', b.title);
+  });
+}
+function toggleTermMode() {
+  const st = document.getElementById('stage');
+  setTermMode(st && st.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+}
 function zoom(d) {
   lvl = Math.min(SZ.length - 1, Math.max(0, lvl + d));
-  document.body.style.fontSize = SZ[lvl] + 'px';
+  const st = document.getElementById('stage');
+  if (st) st.style.fontSize = SZ[lvl] + 'px';
+  store('pe-term-fs', lvl);
 }
 
 function toggleFullscreen() {
@@ -438,6 +695,11 @@ function toggleFullscreen() {
     if (stage.requestFullscreen) stage.requestFullscreen();
     else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
   }
+}
+
+function toEnd() {
+  const t = $('#term');
+  if (t) t.scrollTo({ top: t.scrollHeight, behavior: 'smooth' });
 }
 
 function row(who, text, scroll) {
@@ -455,32 +717,8 @@ function row(who, text, scroll) {
   const log = $('#log');
   if (log) log.append(d);
   rows.push(d);
-  if (scroll) d.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  if (scroll) toEnd();
   return d;
-}
-
-function revealInitialGreeting(text) {
-  const w = row('bot', '', false);
-  w.classList.add('initial-greeting');
-  const tx = w.querySelector('.tx');
-  tx.textContent = '';
-  tx.classList.add('cur');
-  let i = 0;
-  const type = () => {
-    if (i >= text.length) {
-      clearInterval(w._greetTimer);
-      w._greetTimer = null;
-      tx.classList.remove('cur');
-      ready = true;
-      w.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      return;
-    }
-    tx.textContent += text.charAt(i++);
-  };
-  w.style.opacity = '1';
-  type();
-  w._greetTimer = setInterval(type, 24);
-  return w;
 }
 
 function typeInto(el, text, doneCb) {
@@ -503,61 +741,55 @@ function typeInto(el, text, doneCb) {
   el._typeTimer = setInterval(step, 24);
 }
 
-function restart(first, staged) {
-  if (staged === undefined) staged = true;
+function initialText() {
+  if (selectedBot === 'parry') {
+    return window.parry && typeof parry.getInitial === 'function'
+      ? parry.getInitial()
+      : '¿Quién eres y por qué quieres hablar conmigo?';
+  }
+  return eliza.getInitial();
+}
+
+function resetEngine() {
+  if (selectedBot === 'parry') {
+    if (window.parry && typeof parry.reset === 'function') parry.reset();
+  } else {
+    eliza.reset();
+  }
+}
+
+function clearRows() {
   clearTimeout(tm);
   rows.forEach(r => {
     clearInterval(r._greetTimer);
+    const tx = r.querySelector('.tx');
+    if (tx) clearInterval(tx._typeTimer);
     r.remove();
   });
   rows = [];
   ready = false;
+}
 
-  let initial = '';
-  if (selectedBot === 'parry') {
-    if (window.parry && typeof parry.reset === 'function') parry.reset();
-    initial = window.parry && typeof parry.getInitial === 'function'
-      ? parry.getInitial()
-      : '¿Quién eres y por qué quieres hablar conmigo?';
-  } else {
-    eliza.reset();
-    initial = eliza.getInitial();
-  }
-
-  if (staged) {
-    tm = setTimeout(function () { revealInitialGreeting(initial); }, 3400);
-  } else {
-    const w = row('bot', '', !first);
-    const tx = w.querySelector('.tx');
-    typeInto(tx, initial, function () {
-      ready = true;
-      w.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    });
-  }
+function restart() {
+  clearRows();
+  resetEngine();
+  const w = row('bot', '', true);
+  typeInto(w.querySelector('.tx'), initialText(), function () {
+    ready = true;
+    toEnd();
+  });
 }
 
 function handleCommand(v) {
   const cmd = v.toLowerCase().trim();
   if (cmd === '*limpiar') {
     if (selectedBot) {
-      clearTimeout(tm);
-      rows.forEach(function (r) {
-        clearInterval(r._greetTimer);
-        r.remove();
-      });
-      rows = [];
-      ready = false;
-      if (selectedBot === 'parry') {
-        if (window.parry && typeof parry.reset === 'function') parry.reset();
-      } else {
-        eliza.reset();
-      }
-      var initial = selectedBot === 'parry'
-        ? (window.parry && typeof parry.getInitial === 'function' ? parry.getInitial() : '¿Quién eres y por qué quieres hablar conmigo?')
-        : eliza.getInitial();
+      clearTimeout(introTm);
+      clearRows();
+      resetEngine();
       row('bot', '[sesión reiniciada]', true);
-      var w = row('bot', '', true);
-      typeInto(w.querySelector('.tx'), initial, function () { ready = true; });
+      const w = row('bot', '', true);
+      typeInto(w.querySelector('.tx'), initialText(), function () { ready = true; });
     }
     return true;
   }
@@ -572,22 +804,18 @@ function send(e) {
   i.value = '';
   if (!v) return;
 
+  /* La elección de bot es siempre escribiendo */
   if (!selectedBot) {
     const key = v.toLowerCase();
-    if (key === 'x' || key === 'eliza') {
-      selectedBot = 'eliza';
-      startSelectedBot();
-    } else if (key === 'y' || key === 'parry') {
-      selectedBot = 'parry';
-      startSelectedBot();
-    }
+    if (key === 'x' || key === 'eliza') launch('eliza');
+    else if (key === 'y' || key === 'parry') launch('parry');
     return;
   }
 
   if (v.charAt(0) === '*') {
     row('me', v, true);
     if (!handleCommand(v)) {
-      row('bot', 'Comando desconocido. Escribe *limpiar para reiniciar la conversación.', true);
+      row('bot', 'Comando no reconocido.', true);
     }
     return;
   }
@@ -604,16 +832,12 @@ function send(e) {
     tx.textContent = selectedBot === 'parry'
       ? (window.parry ? parry.transform(v) : 'No se pudo cargar PARRY.')
       : eliza.transform(v);
-    w.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    toEnd();
   }, 800 + Math.random() * 600);
 }
 
 function intro() {
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  requestAnimationFrame(function () {
-    requestAnimationFrame(function () { $('#splash').classList.add('ready'); });
-  });
-
   const showSelect = function () {
     if (selectedBot) return;
     const logo = $('#splash .brand-logo');
@@ -627,11 +851,12 @@ function intro() {
     }
     done = true;
     const inp = $('#in');
-    if (inp) inp.focus();
+    if (inp) inp.focus({ preventScroll: true });
   };
-
-  t1 = setTimeout(showSelect, reduce ? 600 : 4800);
+  /* La pantalla PE permanece en bucle hasta tocar el monograma. */
 }
+
+function activateSelector() { const sel = $('#bot-selector'); if (sel) { sel.classList.add('show'); typeSelector(sel); } done = true; }
 
 function showSelector() {
   const splash = $('#splash');
@@ -644,14 +869,13 @@ function showSelector() {
   selector.innerHTML =
     '<div class="bot-block">' +
       '<div class="bot-name">ELIZA</div>' +
-      '<div class="bot-desc">Parodia de una psicoterapeuta rogeriana (1966). Reformula lo que dices.</div>' +
+      '<div class="bot-desc">Parodia de una psicoterapeuta rogeriana (1966). Reformula lo que dices. Escribe X.</div>' +
     '</div>' +
     '<div class="bot-block">' +
       '<div class="bot-name">PARRY</div>' +
-      '<div class="bot-desc">Simula una personalidad paranoide (1972). Mantiene estado interno.</div>' +
+      '<div class="bot-desc">Simula una personalidad paranoide (1972). Mantiene estado interno. Escribe Y.</div>' +
     '</div>' +
-    '<div class="hint">Escribe <strong>X</strong> para ELIZA · <strong>Y</strong> para PARRY</div>' +
-    '<div class="cmds">En el chat: *limpiar reinicia la conversación</div>';
+    '<div class="hint">Escribe X para ELIZA o Y para PARRY</div>';
   splash.appendChild(selector);
 }
 
@@ -703,7 +927,6 @@ function typeSelector(sel) {
 function animateTerminalIntro() {
   const content = $('#content');
   if (!content) return 0;
-  content.classList.remove('fast');
   content.classList.add('go', 'typing');
 
   const banner = content.querySelector('.banner');
@@ -730,29 +953,21 @@ function animateTerminalIntro() {
   return delay;
 }
 
-function typeFirstBotMessage(node) {
-  if (!node) return;
-  const tx = node.querySelector('.tx');
-  if (!tx || !tx.textContent) return;
-  const chars = Math.max(1, tx.textContent.length);
-  tx.style.setProperty('--type-steps', chars);
-  tx.style.setProperty('--type-duration', Math.max(.7, Math.min(2.4, chars * .045)) + 's');
-  tx.classList.add('is-typing');
-  node.classList.add('typing-line');
-}
-
 function startSelectedBot() {
-  clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(selTimer);
+  clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(selTimer); clearTimeout(introTm);
 
   const splash = $('#splash'), content = $('#content');
   if (!splash || !content) return;
 
   const inp = $('#in');
   if (inp) {
-    inp.placeholder = 'Escribe aquí…  (*limpiar)';
-    inp.focus();
+    inp.placeholder = 'Escribe aquí…';
+    inp.focus({ preventScroll: true });
   }
+  const lab = $('#sesion-lab');
+  if (lab) lab.textContent = selectedBot === 'parry' ? 'terminal · parry' : 'terminal · eliza';
 
+  clearRows();
   splash.classList.add('out');
 
   setTimeout(function () {
@@ -800,105 +1015,554 @@ function startSelectedBot() {
     }
 
     const typingDuration = animateTerminalIntro();
-    restart(false);
-
-    const firstMessage = document.querySelector('#log .bot:last-child');
-    if (firstMessage) {
-      setTimeout(function () { typeFirstBotMessage(firstMessage); }, typingDuration + 180);
-    }
+    introTm = setTimeout(function () { if (selectedBot) restart(); }, typingDuration + 150);
   }, 450);
 }
 
+function launch(bot) {
+  selectedBot = bot;
+  startSelectedBot();
+}
+
+/* ─── Anatomía de una respuesta ─── */
+const PIPE = [
+  { t: 'Entrada', c: '«Estoy triste por mi madre.»',
+    n: 'El mensaje se pasa a minúsculas, se limpia la puntuación y se aplican sustituciones previas antes de buscar nada.' },
+  { t: 'Palabra clave', c: 'triste  [>] rango 3\nmadre   [>] rango 5   ← gana',
+    n: 'Se recorren las palabras de la frase y se queda la clave de mayor rango. Si no hay ninguna, entra la memoria o una frase neutra.' },
+  { t: 'Descomposición', c: 'patrón  * mi madre *\n(1) = "estoy triste por"\n(2) = ""',
+    n: 'Una regla corta la frase en fragmentos numerados. Esos fragmentos son lo único que el programa «sabe» de lo que se dijo.' },
+  { t: 'Transposición', c: 'estoy [>] estás\nmi    [>] tu\nyo    [>] tú',
+    n: 'Si un fragmento va a reutilizarse, los pronombres y las conjugaciones se invierten para que suene dicho por ELIZA.' },
+  { t: 'Reensamblado', c: '«Háblame más de tu madre.»',
+    n: 'Se elige una plantilla de la lista, al azar o en orden, y se devuelve como respuesta. Nadie entendió nada; parece que alguien escuchó.' }
+];
+let pipeI = 0, pipeTimer = null;
+function pipeShow(i, user) {
+  pipeI = i;
+  const p = PIPE[i];
+  document.querySelectorAll('.step').forEach(function (b, k) { b.classList.toggle('on', k === i); });
+  $('#pipe-title').firstChild.textContent = '0' + (i + 1) + ' · ' + p.t;
+  $('#pipe-code').textContent = p.c;
+  $('#pipe-note').textContent = p.n;
+  if (user && pipeTimer) { clearInterval(pipeTimer); pipeTimer = null; }
+}
+
+/* ─── Línea de tiempo: filtros ─── */
+function tlFilter(f) {
+  document.querySelectorAll('.chip').forEach(function (c) { c.classList.toggle('on', c.getAttribute('data-f') === f); });
+  document.querySelectorAll('.tl li').forEach(function (li) {
+    li.hidden = !(f === 'todo' || li.getAttribute('data-c') === f);
+  });
+}
+
 window.onload = function () {
+  /* Preferencias independientes */
+  setPageMode(document.documentElement.getAttribute('data-theme') || 'dark');
+  setTermMode('dark');
+  const tf = parseInt(load('pe-term-fs'), 10);
+  if (tf >= 0 && tf < SZ.length) {
+    lvl = tf;
+    const st = document.getElementById('stage');
+    if (st) st.style.fontSize = SZ[lvl] + 'px';
+  }
+
   showSelector();
   intro();
+  const keyboard = document.getElementById('pixel-keyboard');
+  const input = document.getElementById('in');
+  const stageEl = document.getElementById('stage');
+  const kbToggle = document.getElementById('kb-toggle');
+  let nativeKb = false;
+  const isCoarse = window.matchMedia('(pointer: coarse)').matches;
+
+  function keepInputVisible() {
+    if (!input) return;
+    requestAnimationFrame(function () {
+      try {
+        input.scrollLeft = input.scrollWidth;
+      } catch (e) {}
+    });
+  }
+
+  function setNativeKb(on) {
+    nativeKb = !!on;
+    if (stageEl) stageEl.classList.toggle('native-kb', nativeKb);
+    if (kbToggle) {
+      kbToggle.classList.toggle('on', nativeKb);
+      kbToggle.setAttribute('aria-pressed', nativeKb ? 'true' : 'false');
+      kbToggle.title = nativeKb ? 'Usar teclado de la terminal' : 'Usar teclado del dispositivo';
+      kbToggle.setAttribute('aria-label', kbToggle.title);
+    }
+    if (nativeKb && input) {
+      input.focus({ preventScroll: true });
+    } else if (input && document.activeElement === input) {
+      input.blur();
+    }
+  }
+
+  if (input) {
+    input.addEventListener('input', keepInputVisible);
+    input.addEventListener('focus', function () {
+      if (isCoarse && !nativeKb) input.blur();
+    });
+  }
+  if (kbToggle) {
+    kbToggle.addEventListener('click', function () {
+      setNativeKb(!nativeKb);
+    });
+  }
+
+  let capsLock = false, shiftOnce = false;
+  function refreshLetterKeys() {
+    if (!keyboard) return;
+    keyboard.querySelectorAll('button[data-letter]').forEach(function (key) {
+      const letter = key.getAttribute('data-letter');
+      key.textContent = (capsLock || shiftOnce) ? letter.toUpperCase() : letter.toLowerCase();
+    });
+    const caps = keyboard.querySelector('[data-key="CAPS"]');
+    const shift = keyboard.querySelector('[data-key="SHIFT"]');
+    if (caps) caps.classList.toggle('key-active', capsLock);
+    if (shift) shift.classList.toggle('key-active', shiftOnce);
+  }
+  if (keyboard && input) {
+    keyboard.querySelectorAll('button[data-key]').forEach(function (key) {
+      const k = key.getAttribute('data-key');
+      if (/^[A-Z]$/.test(k)) key.setAttribute('data-letter', k);
+    });
+    refreshLetterKeys();
+    keyboard.addEventListener('click', function(ev) {
+      const key = ev.target.closest('button[data-key]'); if (!key) return;
+      const k = key.getAttribute('data-key');
+      if (k === 'CAPS') { capsLock = !capsLock; refreshLetterKeys(); return; }
+      if (k === 'SHIFT') { shiftOnce = !shiftOnce; refreshLetterKeys(); return; }
+      if (k === 'ENTER') { const form = input.closest('form'); if (form) form.requestSubmit(); return; }
+      if (k === 'BACKSPACE' || k === 'CLEAR') {
+        input.value = k === 'CLEAR' ? '' : input.value.slice(0,-1);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        keepInputVisible();
+        return;
+      }
+      if (['ESC','F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','TAB','CTRL','ALT'].includes(k)) return;
+      const value = key.hasAttribute('data-letter') ? ((capsLock || shiftOnce) ? k.toUpperCase() : k.toLowerCase()) : k;
+      input.value += value;
+      if (shiftOnce) { shiftOnce = false; refreshLetterKeys(); }
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      keepInputVisible();
+    });
+  }
+  const peStart = document.getElementById('terminal-pe-start');
+  if (peStart) peStart.addEventListener('click', function(){
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) toggleFullscreen();
+    setTimeout(activateSelector, 220);
+  });
+
+  /* Pipeline */
+  document.querySelectorAll('.step').forEach(function (b, k) {
+    b.addEventListener('click', function () { pipeShow(k, true); });
+  });
+  pipeShow(0);
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    pipeTimer = setInterval(function () { pipeShow((pipeI + 1) % PIPE.length); }, 4200);
+  }
+
+  /* Línea de tiempo */
+  document.querySelectorAll('.chip').forEach(function (c) {
+    c.addEventListener('click', function () { tlFilter(c.getAttribute('data-f')); });
+  });
+
+  /* Aparición de contenido */
+  const rv = document.querySelectorAll('.rv');
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    rv.forEach(function (el) { io.observe(el); });
+
+    /* Sección activa en el menú */
+    const links = Array.prototype.slice.call(document.querySelectorAll('.menubar a.nav'));
+    const secs = Array.prototype.slice.call(document.querySelectorAll('[data-nav]'));
+    const io2 = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        const k = e.target.getAttribute('data-nav');
+        links.forEach(function (a) { a.classList.toggle('on', a.getAttribute('href') === '#' + k); });
+      });
+    }, { rootMargin: '-35% 0px -55% 0px' });
+    secs.forEach(function (s) { io2.observe(s); });
+  } else {
+    rv.forEach(function (el) { el.classList.add('in'); });
+  }
 };
 </script>
 </head>
-<body>
-<main>
-  <div id="stage">
-    <div class="term" id="term">
-      <div class="tools">
-        <button type="button" class="pe" onclick="toggleFullscreen()" title="Pantalla completa" aria-label="Pantalla completa">
-          <span class="logo-p">P</span><span class="logo-e">E</span>
-        </button>
-        <div class="tools-right">
-          <button type="button" onclick="zoom(1)" aria-label="Aumentar tamaño">[+Aa]</button>
-          <button type="button" onclick="zoom(-1)" aria-label="Reducir tamaño">[-Aa]</button>
-        </div>
-      </div>
+<body id="top">
 
-      <div id="splash">
-        <p class="brand-logo" aria-label="Proyecto Eliza">
-          <span class="bl-part" aria-hidden="true"><span class="bl-initial">P</span><span class="bl-rest">royecto</span></span>
-          <span class="bl-gap" aria-hidden="true"></span>
-          <span class="bl-part" aria-hidden="true"><span class="bl-initial">E</span><span class="bl-rest">liza</span></span>
-        </p>
-        <p class="splash-note">Una versión ampliada y en español de ELIZA. También PARRY, y un editor para crear tu propio guion.</p>
-      </div>
+<nav class="menubar" aria-label="Principal">
+  <a class="pe" href="#top" title="Proyecto Eliza" aria-label="Proyecto Eliza, inicio"><span class="logo-p">P</span><span class="logo-e">E</span></a>
+  <a class="nav" href="#chat">Terminal</a>
+  <a class="nav" href="#proyecto">Proyecto</a>
+  <a class="nav" href="#historia">Historia</a>
+  <a class="nav" href="#motor">Motor</a>
+  <a class="nav" href="#tiempo">Línea de tiempo</a>
+  <a class="nav" href="#descargar">Descargar</a>
+  <a class="nav" href="#editor">Editor</a>
+  <a class="nav" href="#fuentes">Fuentes</a>
+  <span class="spacer"></span>
+  <span class="group">
+    <button type="button" class="tool" onclick="pageZoom(-1)" title="Texto de la página más pequeño" aria-label="Texto de la página más pequeño">Aa−</button>
+    <button type="button" class="tool" onclick="pageZoom(1)" title="Texto de la página más grande" aria-label="Texto de la página más grande">Aa+</button>
+    <button type="button" class="tool page-toggle" onclick="togglePageMode()">[m:c]</button>
+  </span>
+</nav>
 
-      <div id="content" hidden>
-        <div class="rule r1" aria-hidden="true">============================================================================================================================================</div>
-        <pre class="banner" id="banner" aria-label="ELIZA"><span>EEEEEE  LL      IIII  ZZZZZZZ   AAAAA</span><span>EE      LL       II       ZZ   AA   AA</span><span>EEEEE   LL       II      ZZZ   AAAAAAA</span><span>EE      LL       II     ZZ     AA   AA</span><span>EEEEEE  LLLLLL  IIII  ZZZZZZZ  AA   AA</span></pre>
-        <div class="rule r2" aria-hidden="true">============================================================================================================================================</div>
-        <div class="info" id="engineInfo">
-          <span class="il">ELIZA es la parodia de una psicoterapeuta rogeriana.</span>
-          <span class="il">El programa original lo escribió Joseph Weizenbaum en 1966.</span>
-          <span class="il">Esta implementación es de Norbert Landsteiner (mass:werk), 2005.</span>
-          <span class="il">Traducida y ampliada al español para el Proyecto ELIZA.</span>
-        </div>
-        <div id="log" aria-live="polite"></div>
-      </div>
-    </div>
-
-    <form class="bar" onsubmit="send(event)">
-      <input id="in" type="text" autocomplete="off" aria-label="Tu mensaje" placeholder="Escribe aquí…">
-      <button type="submit">Enviar</button>
-      <button type="button" onclick="if(selectedBot){restart(false,false)}else{location.reload()}">Reiniciar</button>
-    </form>
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    <span>«¿Cómo te hace sentir eso?» &nbsp;/&nbsp; «Cuéntame más.» &nbsp;/&nbsp; «¿Por qué lo dices?» &nbsp;/&nbsp; «Háblame de tu madre.» &nbsp;/&nbsp; «Continúa, por favor.» &nbsp;/&nbsp; «¿Qué te sugiere eso?» &nbsp;/&nbsp; «Estoy escuchando.» &nbsp;/&nbsp; «¿Y eso qué significa para ti?» &nbsp;/&nbsp; &nbsp;</span>
+    <span>«¿Cómo te hace sentir eso?» &nbsp;/&nbsp; «Cuéntame más.» &nbsp;/&nbsp; «¿Por qué lo dices?» &nbsp;/&nbsp; «Háblame de tu madre.» &nbsp;/&nbsp; «Continúa, por favor.» &nbsp;/&nbsp; «¿Qué te sugiere eso?» &nbsp;/&nbsp; «Estoy escuchando.» &nbsp;/&nbsp; «¿Y eso qué significa para ti?» &nbsp;/&nbsp; &nbsp;</span>
   </div>
+</div>
 
-  <section class="doc">
-    <h2>Este proyecto</h2>
-    <p>Proyecto Eliza nace de la voluntad de hacer accesible, en español y con un guion más amplio, una de las piezas fundacionales de la inteligencia artificial conversacional. La página permite hablar con ELIZA de inmediato; además se entrega un archivo descargable para quien quiera ejecutarla y modificarla en local, y un editor propio en el sitio para ensayar personalidades sin tocar el motor. De forma experimental, la misma interfaz admite también a PARRY, con las limitaciones ya señaladas: no forma parte del paquete descargable ni del editor.</p>
-    <p class="center">
-      <a href="elizaespanol.zip" class="download-btn" download>Descargar elizaespanol.zip<br>
-      <small>index.html · elizabot.js · eliza-espanol.js</small></a>
-    </p>
+<main>
+  <div class="page">
 
-    <h2>Qué es ELIZA</h2>
-    <p>ELIZA es un programa de conversación escrito entre 1964 y 1966 por Joseph Weizenbaum en el Massachusetts Institute of Technology. Suele citarse como el primer chatbot: no porque pretendiera «pensar», sino porque por primera vez una persona podía intercambiar frases en lenguaje natural con una máquina y obtener respuestas que, a simple vista, parecían de alguien que escuchaba. Weizenbaum lo planteó como un experimento sobre lo poco que hace falta para sostener la ilusión de una conversación; no como un modelo de inteligencia.</p>
-    <p>El sistema no interpreta el sentido de lo que se le dice. Reconoce palabras clave, aplica plantillas que parten y reordenan la frase, e invierte pronombres para devolver una pregunta o un comentario que suena a diálogo. El nombre viene de Eliza Doolittle, el personaje de <em>Pygmalion</em> que aprende a hablar de otra manera: de forma parecida, el programa podía cargar distintos guiones y adoptar tonos distintos sin cambiar el motor.</p>
+    <!-- ─── TERMINAL ─── -->
+    <section class="chat" id="chat" data-nav="chat">
+      <div id="stage" data-theme="dark">
+        <div class="frame">
+          <div class="tools">
+            <span class="lab" id="sesion-lab">terminal</span>
+            <div class="tools-right"><button type="button" class="terminal-pe pe" id="terminal-pe-start" title="Tocar para comenzar" aria-label="Comenzar: tocar PE"><span class="logo-p">P</span><span class="logo-e">E</span></button>
+              <button type="button" onclick="zoom(1)" aria-label="Aumentar tamaño del texto de la terminal">[+Aa]</button>
+              <button type="button" onclick="zoom(-1)" aria-label="Reducir tamaño del texto de la terminal">[-Aa]</button>
+              <button type="button" class="term-toggle" onclick="toggleTermMode()">[m:c]</button>
+              <button type="button" onclick="if(selectedBot){restart()}else{location.reload()}" title="Reiniciar sesión" aria-label="Reiniciar sesión">[re]</button>
+            </div>
+          </div>
 
-    <h2>Cómo funcionaba el original</h2>
-    <p>Weizenbaum separó con claridad el <strong>motor</strong> —el algoritmo que procesa el texto— del <strong>guion</strong>, es decir, de los datos: claves, patrones y respuestas. Cada mensaje se normalizaba; se buscaba la palabra clave de mayor rango; una regla de descomposición cortaba la frase en trozos numerados; otra de reensamblado armaba la salida; y una tabla de transposición convertía «yo» en «tú», «mi» en «tu», y así sucesivamente. Si no había clave reconocible, el programa tiraba de una memoria breve o de una frase neutra del tipo «por favor, continúa».</p>
-    <p>El guion más conocido, DOCTOR, imitaba la terapia centrada en el cliente de Carl Rogers: el terapeuta no aconseja ni interpreta, solo refleja lo oído. Esa elección no fue casual. En una entrevista rogeriana quien pregunta puede no saber casi nada del mundo sin que resulte extraño; así Weizenbaum evitaba dotar al programa de conocimiento general. Lo que sí observó, y le inquietó, es que mucha gente le atribuía comprensión y empatía de todos modos. Ese fenómeno se conoce como <strong>efecto ELIZA</strong>. Años después, en <em>Computer Power and Human Reason</em> (1976), argumentó que calcular y juzgar no son lo mismo, y que hay tareas que una máquina no debería asumir aunque pudiera ejecutarlas.</p>
+          <div class="term" id="term">
+            <div id="splash">
+              <p class="brand-logo" aria-label="Proyecto Eliza">
+                <span class="bl-part" aria-hidden="true"><span class="bl-initial">P</span><span class="bl-rest">royecto</span></span>
+                <span class="bl-gap" aria-hidden="true"></span>
+                <span class="bl-part" aria-hidden="true"><span class="bl-initial">E</span><span class="bl-rest">liza</span></span>
+              </p>
+              <p class="splash-note">Una versión ampliada y en español de ELIZA. También PARRY, y un editor para crear tu propio guion.</p>
+            </div>
 
-    <h2>mass:werk y la versión actual</h2>
-    <p>En 2005, Norbert Landsteiner (mass:werk) reescribió el motor en JavaScript: elizabot.js. Mantiene la arquitectura de Weizenbaum —claves con rango, descomposición, reensamblado, memoria— y añade preprocesado, sinónimos dentro de los patrones y frases de despedida. El guion sigue siendo un conjunto de datos aparte del motor; un fragmento tiene esta forma:</p>
-    <pre><code>["madre", 5, [
+            <div id="content" hidden>
+              <div class="rule r1" aria-hidden="true"></div>
+              <pre class="banner" id="banner" aria-label="ELIZA"><span>EEEEEE  LL      IIII  ZZZZZZZ   AAAAA</span><span>EE      LL       II       ZZ   AA   AA</span><span>EEEEE   LL       II      ZZZ   AAAAAAA</span><span>EE      LL       II     ZZ     AA   AA</span><span>EEEEEE  LLLLLL  IIII  ZZZZZZZ  AA   AA</span></pre>
+              <div class="rule r2" aria-hidden="true"></div>
+              <div class="info" id="engineInfo">
+                <span class="il">ELIZA es la parodia de una psicoterapeuta rogeriana.</span>
+                <span class="il">El programa original lo escribió Joseph Weizenbaum en 1966.</span>
+                <span class="il">Esta implementación es de Norbert Landsteiner (mass:werk), 2005.</span>
+                <span class="il">Traducida y ampliada al español para el Proyecto ELIZA.</span>
+              </div>
+              <div id="log" aria-live="polite"></div>
+            </div>
+          </div>
+
+          <div class="start-hint"><span class="hint-mark" aria-hidden="true">PE</span><span>Toca el monograma PE, en la esquina superior, para iniciar una conversación con ELIZA o PARRY.</span></div>
+          <form class="bar" onsubmit="send(event)">
+            <span class="gt" aria-hidden="true">&gt;</span>
+            <input id="in" type="text" autocomplete="off" aria-label="Tu mensaje" placeholder="Escribe aquí…">
+            <button type="button" class="kb-toggle" id="kb-toggle" title="Usar teclado del dispositivo" aria-label="Usar teclado del dispositivo" aria-pressed="false">
+              <svg viewBox="0 0 18 12" aria-hidden="true" shape-rendering="crispEdges">
+                <rect x="0" y="0" width="18" height="12" fill="none" stroke="currentColor" stroke-width="1"/>
+                <rect x="2" y="2" width="2" height="2" fill="currentColor"/>
+                <rect x="5" y="2" width="2" height="2" fill="currentColor"/>
+                <rect x="8" y="2" width="2" height="2" fill="currentColor"/>
+                <rect x="11" y="2" width="2" height="2" fill="currentColor"/>
+                <rect x="14" y="2" width="2" height="2" fill="currentColor"/>
+                <rect x="2" y="5" width="2" height="2" fill="currentColor"/>
+                <rect x="5" y="5" width="2" height="2" fill="currentColor"/>
+                <rect x="8" y="5" width="2" height="2" fill="currentColor"/>
+                <rect x="11" y="5" width="2" height="2" fill="currentColor"/>
+                <rect x="14" y="5" width="2" height="2" fill="currentColor"/>
+                <rect x="4" y="8" width="10" height="2" fill="currentColor"/>
+              </svg>
+            </button>
+            <button type="submit" class="btn primary">Enviar</button>
+          </form>
+          <div id="pixel-keyboard" class="pixel-keyboard" aria-label="Teclado de terminal">
+            <div class="key-row"><button data-key="ESC">ESC</button><button data-key="F1">F1</button><button data-key="F2">F2</button><button data-key="F3">F3</button><button data-key="F4">F4</button><button data-key="F5">F5</button><button data-key="F6">F6</button><button data-key="F7">F7</button><button data-key="F8">F8</button><button data-key="F9">F9</button><button data-key="F10">F10</button></div>
+            <div class="key-row"><button data-key="TAB">TAB</button><button data-key="Q">Q</button><button data-key="W">W</button><button data-key="E">E</button><button data-key="R">R</button><button data-key="T">T</button><button data-key="Y">Y</button><button data-key="U">U</button><button data-key="I">I</button><button data-key="O">O</button><button data-key="P">P</button><button data-key="BACKSPACE" aria-label="Retroceso" title="Retroceso"><svg class="pixel-icon" viewBox="0 0 16 12" aria-hidden="true" shape-rendering="crispEdges"><path d="M5 1H15V11H5L1 6Z" fill="currentColor"/><path d="M7 4L11 8M11 4L7 8" stroke="#f7f7f4" stroke-width="1.5"/></svg></button></div>
+            <div class="key-row"><button data-key="CAPS" aria-label="Bloqueo de mayúsculas" title="Mayúsculas"><svg class="pixel-icon" viewBox="0 0 16 14" aria-hidden="true" shape-rendering="crispEdges"><path fill="currentColor" d="M7 1H9V3H11V5H13V7H10V12H6V7H3V5H5V3H7Z"/></svg></button><button data-key="A">A</button><button data-key="S">S</button><button data-key="D">D</button><button data-key="F">F</button><button data-key="G">G</button><button data-key="H">H</button><button data-key="J">J</button><button data-key="K">K</button><button data-key="L">L</button><button data-key="ENTER" aria-label="Enviar" title="Enviar"><svg class="pixel-icon" viewBox="0 0 16 14" aria-hidden="true" shape-rendering="crispEdges"><path fill="currentColor" d="M1 2H4V7H12V4H15V10H4V13H1Z"/></svg></button></div>
+            <div class="key-row"><button data-key="SHIFT" aria-label="Mayúsculas" title="Mayúsculas"><svg class="pixel-icon" viewBox="0 0 16 14" aria-hidden="true" shape-rendering="crispEdges"><path fill="currentColor" d="M7 1H9V3H11V5H13V7H10V13H6V7H3V5H5V3H7Z"/></svg></button><button data-key="Z">Z</button><button data-key="X">X</button><button data-key="C">C</button><button data-key="V">V</button><button data-key="B">B</button><button data-key="N">N</button><button data-key="M">M</button><button data-key=",">,</button><button data-key=".">.</button><button data-key="-">-</button></div>
+            <div class="key-row"><button data-key="CTRL">CTRL</button><button data-key="ALT">ALT</button><button data-key=" " class="space-key">ESPACIO</button><button data-key="CLEAR" aria-label="Vaciar texto" title="Vaciar texto"><svg class="pixel-icon" viewBox="0 0 16 14" aria-hidden="true" shape-rendering="crispEdges"><path fill="currentColor" d="M2 2H14V4H12V6H14V8H12V10H14V12H2V10H4V8H2V6H4V4H2Z"/><path d="M6 5L10 9M10 5L6 9" stroke="#f7f7f4" stroke-width="1.5"/></svg></button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── MANUAL ─── -->
+    <div class="manual">
+
+      <article class="sec" id="proyecto" data-nav="proyecto">
+        <header class="sec-head"><span class="num">01</span><h2>Este proyecto</h2></header>
+        <div class="sec-body rv">
+          <p class="lead">Una pequeña colección interactiva sobre conversaciones hechas con reglas.</p>
+          <p>El sitio reúne una terminal, notas históricas y herramientas para explorar cómo se construían algunos interlocutores artificiales.</p>
+
+          <div class="modules">
+            <a class="mod" href="#chat">
+              <span class="mod-k">[x]</span>
+              <span class="mod-n">ELIZA</span>
+              <span class="mod-d">1966 · Weizenbaum. Parodia de una psicoterapeuta rogeriana, con guion ampliado en español.</span>
+              <span class="mod-go">en la terminal, escribe X [>]</span>
+            </a>
+            <a class="mod" href="#chat">
+              <span class="mod-k">[y]</span>
+              <span class="mod-n">PARRY</span>
+              <span class="mod-d">1972 · Colby. Recreación propia de una personalidad paranoide con estado interno.</span>
+              <span class="mod-go">en la terminal, escribe Y [>]</span>
+            </a>
+            <a class="mod" href="#editor">
+              <span class="mod-k">[ed]</span>
+              <span class="mod-n">EDITOR</span>
+              <span class="mod-d">Edita el guion: claves, rangos, sinónimos y respuestas. Prueba en vivo y descarga tu versión.</span>
+              <span class="mod-go">cómo funciona [>]</span>
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <article class="sec" id="que-es" data-nav="proyecto">
+        <header class="sec-head"><span class="num">02</span><h2>Qué es ELIZA</h2></header>
+        <div class="sec-body rv">
+          <p>ELIZA es un programa de conversación escrito entre 1964 y 1966 por Joseph Weizenbaum en el Massachusetts Institute of Technology. Suele citarse como el primer chatbot: no porque pretendiera «pensar», sino porque por primera vez una persona podía intercambiar frases en lenguaje natural con una máquina y obtener respuestas que, a simple vista, parecían de alguien que escuchaba. Weizenbaum lo planteó como un experimento sobre lo poco que hace falta para sostener la ilusión de una conversación; no como un modelo de inteligencia.</p>
+          <p class="pull">No interpreta el sentido: reconoce, reordena y devuelve.</p>
+          <p>El sistema no interpreta el sentido de lo que se le dice. Reconoce palabras clave, aplica plantillas que parten y reordenan la frase, e invierte pronombres para devolver una pregunta o un comentario que suena a diálogo. El nombre viene de Eliza Doolittle, el personaje de <em>Pygmalion</em> que aprende a hablar de otra manera: de forma parecida, el programa podía cargar distintos guiones y adoptar tonos distintos sin cambiar el motor.</p>
+        </div>
+      </article>
+
+      <!-- ─── HISTORIA AMPLIADA ─── -->
+      <article class="sec" id="historia" data-nav="historia">
+        <header class="sec-head">
+          <span class="num">03</span><h2>Historia de ELIZA</h2>
+          <nav class="mini" aria-label="En esta sección">
+            <a href="#h-contexto">3.1 El contexto</a>
+            <a href="#h-autor">3.2 El autor</a>
+            <a href="#h-creacion">3.3 La creación</a>
+            <a href="#h-efecto">3.4 El efecto ELIZA</a>
+            <a href="#h-critica">3.5 De programa a crítica</a>
+            <a href="#h-familia">3.6 Una familia de copias</a>
+            <a href="#h-codigo">3.7 El código perdido</a>
+            <a href="#h-finding">3.8 Finding ELIZA</a>
+          </nav>
+        </header>
+        <div class="sec-body rv">
+          <p class="lead">ELIZA es menos un programa que un episodio: una pequeña pieza técnica de los años sesenta, una reacción inesperada del público y una discusión que sigue abierta.</p>
+
+          <h3 id="h-contexto"><span class="sn">3.1</span>El contexto: el tiempo compartido</h3>
+          <p>A comienzos de los años sesenta los computadores eran máquinas enormes y costosas que se usaban por lotes: se entregaba un trabajo y se esperaba el resultado, a veces horas después. El MIT desarrolló entonces CTSS (<em>Compatible Time-Sharing System</em>), considerado el primer sistema de tiempo compartido, que permitía que varias personas trabajaran a la vez, desde terminales, sobre una misma máquina, un IBM 7094 <span class="ref">[3]</span>. Esa novedad hizo posible algo hasta entonces impensable: escribir una frase y recibir una respuesta casi inmediata, como en una conversación. ELIZA no se entiende sin ese cambio de escenario.</p>
+
+          <h3 id="h-autor"><span class="sn">3.2</span>El autor</h3>
+          <p>Joseph Weizenbaum nació en Berlín el 8 de enero de 1923, en una familia judía, y a mediados de los años treinta emigró con ella a Estados Unidos, huyendo del nazismo; se instalaron en Detroit <span class="ref">[6][7]</span>. Trabajó como ingeniero de sistemas en General Electric entre 1955 y 1963, donde participó en ERMA, uno de los primeros sistemas bancarios automatizados, y después se incorporó al MIT, primero como profesor asociado y más tarde como catedrático de informática <span class="ref">[6]</span>. Murió el 5 de marzo de 2008 <span class="ref">[6][7]</span>.</p>
+
+          <h3 id="h-creacion"><span class="sn">3.3</span>La creación (1964–1966)</h3>
+          <p>Weizenbaum trabajaba con lenguajes de procesamiento de listas. Había creado SLIP (<em>Symmetric LIst Processor</em>) y, como el lenguaje habitual en CTSS era MAD, lo adaptó a ese entorno; sobre esa base construyó ELIZA en MAD-SLIP <span class="ref">[3]</span>. Las fuentes sitúan el desarrollo entre 1964 y 1966, o incluso hasta 1967, según dónde se ponga el límite <span class="ref">[3][4]</span>. La presentación pública llegó con su artículo de enero de 1966 en <em>Communications of the ACM</em> <span class="ref">[1]</span>.</p>
+          <p>El objetivo era estudiar la comunicación en lenguaje natural entre una persona y una máquina, no ofrecer terapia. Para sostener un diálogo sin dotar al programa de conocimiento del mundo, Weizenbaum eligió un guion que imitaba a un terapeuta rogeriano, el famoso DOCTOR. El artículo publicó ese guion, pero no el código del programa <span class="ref">[3]</span>. Conviene recordar también que el sistema era más general que su demostración más célebre: admitía guiones distintos y hasta permitía modificar sus reglas durante la conversación, una función de «enseñanza» que el artículo de 1966 apenas menciona <span class="ref">[3]</span>.</p>
+
+          <h3 id="h-efecto"><span class="sn">3.4</span>El efecto ELIZA</h3>
+          <p>Lo que ocurrió después sorprendió a su autor. Weizenbaum contó que le impresionó la rapidez y la intensidad con que las personas que conversaban con DOCTOR se implicaban emocionalmente con el programa y le atribuían rasgos humanos <span class="ref">[2][7]</span>. La anécdota más repetida es la de su secretaria, quien, sabiendo que era un programa, le pidió que saliera de la habitación para hablar con él en privado <span class="ref">[10]</span>. Algunos colegas vieron en ELIZA el germen de una psicoterapia automatizada y barata; el astrónomo Carl Sagan fue uno de los entusiastas <span class="ref">[10]</span>. Weizenbaum se opuso a esa lectura.</p>
+          <p>Hoy se llama <strong>efecto ELIZA</strong> a la tendencia a atribuir comprensión, intención o emociones a un sistema que solo manipula símbolos. Es probablemente el legado más duradero del programa, y el que más ha servido a la psicología y al diseño de interfaces.</p>
+
+          <h3 id="h-critica"><span class="sn">3.5</span>De programa a crítica</h3>
+          <p>La experiencia cambió la trayectoria de Weizenbaum. En enero de 1972 publicó en el semanario alemán <em>Die Zeit</em> el artículo «Albtraum Computer» <span class="ref">[7]</span> y en 1976 el libro <em>Computer Power and Human Reason</em> <span class="ref">[2]</span>. Su tesis central separa lo que una máquina puede hacer de lo que debería hacerse con ella: que un computador sea capaz de ejecutar una tarea que realizan las personas no basta para delegársela, sobre todo cuando exige juicio, compasión o responsabilidad <span class="ref">[2][6]</span>. En la década de 1970 quedó, por esas ideas, al margen de la corriente principal de la inteligencia artificial <span class="ref">[6]</span>. Se le recuerda tanto por haber creado ELIZA como por haber advertido contra lo que ELIZA hacía parecer posible.</p>
+
+          <h3 id="h-familia"><span class="sn">3.6</span>Una familia de copias</h3>
+          <p>Casi de inmediato, ELIZA empezó a copiarse. Bernie Cosell, en la empresa BBN, escribió en 1966 una versión en Lisp a partir solo del artículo, sin haber visto el código de Weizenbaum <span class="ref">[3]</span>. BBN era uno de los nodos fundadores de ARPANET, y esa versión circuló por la red y por la comunidad académica, con un efecto curioso: durante cincuenta años se creyó que ELIZA se había escrito en Lisp <span class="ref">[3]</span>.</p>
+          <p>En 1972, el psiquiatra Kenneth Colby, de Stanford, creó PARRY, que simulaba a una persona con esquizofrenia paranoide, y que se sometió a una variante de la prueba de Turing con psiquiatras <span class="ref">[11]</span>. El 18 de septiembre de 1972 se realizó una sesión por ARPANET entre PARRY, en Stanford, y una versión de DOCTOR, en BBN; su transcripción se difundió en enero de 1973 como RFC 439 <span class="ref">[5]</span>.</p>
+          <p>Una segunda ola llegó con los computadores personales. Jeff Shrager escribió en 1973 una versión en BASIC que se publicó en <em>Creative Computing</em> en 1977 y dio origen a cientos de copias <span class="ref">[8]</span>. Otra versión muy extendida entre programadores es la del modo <code>doctor</code> del editor GNU Emacs. En 2005, Norbert Landsteiner (mass:werk) reescribió el motor en JavaScript, que es el que usa esta página <span class="ref">[9]</span>. El resultado de esta cadena de copias es que, durante décadas, «ELIZA» pasó a designar sobre todo el guion DOCTOR, más que el sistema general de Weizenbaum <span class="ref">[4]</span>.</p>
+
+          <h3 id="h-codigo"><span class="sn">3.7</span>El código perdido</h3>
+          <p>El código original permaneció desaparecido durante casi sesenta años: el artículo de 1966 publicó el guion, no el programa <span class="ref">[3]</span>. En 2021, Jeff Shrager y el archivista del MIT Myles Crowley encontraron entre los papeles de Weizenbaum una copia impresa que incluía una versión temprana del guion DOCTOR, una versión casi completa del código en MAD-SLIP y rutinas de apoyo escritas en MAD y FAP (un lenguaje ensamblador); los herederos de Weizenbaum autorizaron su publicación como código abierto <span class="ref">[3]</span>.</p>
+          <p>Un equipo reconstruyó después el entorno completo, con CTSS ejecutándose sobre un IBM 7094 emulado, y el 21 de diciembre de 2024 el programa original volvió a funcionar por primera vez en casi sesenta años <span class="ref">[3][12]</span>. Su restauración se describe en el artículo «ELIZA Reanimated» (2025) <span class="ref">[3]</span>.</p>
+
+          <h3 id="h-finding"><span class="sn">3.8</span>Finding ELIZA</h3>
+          <p>El proyecto <em>Finding ELIZA</em> (ELIZA Archaeology Project), del que surge el libro <em>Inventing ELIZA</em> (MIT Press, 2026), sitúa ese hallazgo dentro de una investigación más amplia, basada en archivos del MIT, Stanford y UCLA. Según sus autores, ELIZA no fue un programa único sino una familia de al menos cinco versiones principales elaboradas entre 1965 y 1968, con guiones muy distintos de DOCTOR —desde un tutor de aritmética hasta una parodia de Nixon—, y un sistema más sofisticado de lo que sugerían los registros conocidos <span class="ref">[4]</span>.</p>
+          <p>Dicho de otro modo: el ELIZA de los manuales es una demostración, y el sistema original, un entorno de programación conversacional. Esta página parte del motor de 2005 y se inscribe en esa larga tradición de copias y reinterpretaciones; no pretende ser el original. Aún se discute si Weizenbaum concibió el programa como un proyecto de inteligencia artificial o como una crítica a ella; quizá fueron ambas cosas.</p>
+        </div>
+      </article>
+
+      <article class="sec" id="motor" data-nav="motor">
+        <header class="sec-head"><span class="num">04</span><h2>Cómo funcionaba el original</h2></header>
+        <div class="sec-body rv">
+          <p>Weizenbaum separó con claridad el <strong>motor</strong> —el algoritmo que procesa el texto— del <strong>guion</strong>, es decir, de los datos: claves, patrones y respuestas. Cada mensaje se normalizaba; se buscaba la palabra clave de mayor rango; una regla de descomposición cortaba la frase en trozos numerados; otra de reensamblado armaba la salida; y una tabla de transposición convertía «yo» en «tú», «mi» en «tu», y así sucesivamente. Si no había clave reconocible, el programa tiraba de una memoria breve o de una frase neutra del tipo «por favor, continúa».</p>
+
+          <div class="pipe" id="pipe">
+            <div class="pipe-steps" role="tablist" aria-label="Pasos de una respuesta">
+              <button type="button" class="step on"><b>01</b><span>Entrada</span></button>
+              <button type="button" class="step"><b>02</b><span>Clave</span></button>
+              <button type="button" class="step"><b>03</b><span>Descomposición</span></button>
+              <button type="button" class="step"><b>04</b><span>Transposición</span></button>
+              <button type="button" class="step"><b>05</b><span>Reensamblado</span></button>
+            </div>
+            <div class="pipe-view">
+              <div class="pipe-title" id="pipe-title"><span></span><small>ejemplo ilustrativo</small></div>
+              <pre class="pipe-code" id="pipe-code"></pre>
+              <p class="pipe-note" id="pipe-note"></p>
+            </div>
+          </div>
+
+          <p>El guion más conocido, DOCTOR, imitaba la terapia centrada en el cliente de Carl Rogers: el terapeuta no aconseja ni interpreta, solo refleja lo oído. Esa elección no fue casual. En una entrevista rogeriana quien pregunta puede no saber casi nada del mundo sin que resulte extraño; así Weizenbaum evitaba dotar al programa de conocimiento general. Lo que sí observó, y le inquietó, es que mucha gente le atribuía comprensión y empatía de todos modos. Ese fenómeno se conoce como <strong>efecto ELIZA</strong>. Años después, en <em>Computer Power and Human Reason</em> (1976), argumentó que calcular y juzgar no son lo mismo, y que hay tareas que una máquina no debería asumir aunque pudiera ejecutarlas.</p>
+        </div>
+      </article>
+
+      <article class="sec" id="masswerk" data-nav="motor">
+        <header class="sec-head"><span class="num">05</span><h2>mass:werk y la versión actual</h2></header>
+        <div class="sec-body rv">
+          <p>En 2005, Norbert Landsteiner (mass:werk) reescribió el motor en JavaScript: elizabot.js. Mantiene la arquitectura de Weizenbaum —claves con rango, descomposición, reensamblado, memoria— y añade preprocesado, sinónimos dentro de los patrones y frases de despedida. El guion sigue siendo un conjunto de datos aparte del motor; un fragmento tiene esta forma:</p>
+<pre class="code"><code>["madre", 5, [
   ["* mi madre *", [
     "Háblame más de tu madre.",
     "¿Cómo es tu relación con ella?"
   ]],
   ["*", ["Cuéntame más sobre tu familia."]]
 ]]</code></pre>
-    <p>La versión que corre aquí usa ese mismo motor, sin tocarlo. Lo que cambia es el guion: ampliado y pasado al español. Traducir ELIZA no es sustituir palabras una a una; hay que ajustar la transposición de pronombres, la conjugación («estoy» pasa a «estás»), el género y el registro. Todo se ejecuta en el navegador, sin servidor.</p>
+          <p>La versión que corre aquí usa ese mismo motor, sin tocarlo. Lo que cambia es el guion: ampliado y pasado al español. Traducir ELIZA no es sustituir palabras una a una; hay que ajustar la transposición de pronombres, la conjugación («estoy» pasa a «estás»), el género y el registro. Todo se ejecuta en el navegador, sin servidor.</p>
+        </div>
+      </article>
 
-    <h2>PARRY</h2>
-    <p>PARRY lo creó Kenneth Colby en 1972. A diferencia de ELIZA, no se limitaba a reformular lo que oía: intentaba simular una personalidad paranoide con reglas, creencias y un estado interno que influía en las respuestas posteriores. En su momento se llegó a confrontar una versión de DOCTOR con PARRY por red; fue uno de los primeros «encuentros» entre dos programas conversacionales.</p>
-    <p>La opción PARRY de esta página es una recreación propia, inspirada en esa idea de estado acumulado (sospecha, confianza, tensión), no una reproducción del código histórico. No se ofrece para editar ni para descargar desde aquí: está pensada solo como interlocutor experimental dentro de la interfaz.</p>
-  </section>
+      <article class="sec" id="parry" data-nav="motor">
+        <header class="sec-head"><span class="num">06</span><h2>PARRY</h2></header>
+        <div class="sec-body rv">
+          <p>PARRY lo creó Kenneth Colby en 1972. A diferencia de ELIZA, no se limitaba a reformular lo que oía: intentaba simular una personalidad paranoide con reglas, creencias y un estado interno que influía en las respuestas posteriores. En su momento se llegó a confrontar una versión de DOCTOR con PARRY por red; fue uno de los primeros «encuentros» entre dos programas conversacionales.</p>
+          <p>La opción PARRY de esta página es una recreación propia, inspirada en esa idea de estado acumulado (sospecha, confianza, tensión), no una reproducción del código histórico. No se ofrece para editar ni para descargar desde aquí: está pensada solo como interlocutor experimental dentro de la interfaz.</p>
+        </div>
+      </article>
+
+      <!-- ─── LÍNEA DE TIEMPO ─── -->
+      <article class="sec wide" id="tiempo" data-nav="tiempo">
+        <header class="sec-head"><span class="num">07</span><h2>Línea de tiempo</h2></header>
+        <div class="sec-body rv">
+          <p>De 1923 a hoy: la vida de su autor, el programa, sus descendientes y su redescubrimiento. Filtra por tema.</p>
+          <div class="tl-filter" role="group" aria-label="Filtrar la línea de tiempo">
+            <button type="button" class="chip on" data-f="todo">todo</button>
+            <button type="button" class="chip" data-f="autor">autor</button>
+            <button type="button" class="chip" data-f="eliza">eliza</button>
+            <button type="button" class="chip" data-f="parry">parry</button>
+            <button type="button" class="chip" data-f="versiones">versiones</button>
+            <button type="button" class="chip" data-f="critica">crítica</button>
+            <button type="button" class="chip" data-f="codigo">código</button>
+          </div>
+          <ol class="tl">
+            <li data-c="autor"><span class="yr">1923</span><div class="what"><span class="tag">[autor]</span><h3>Nace Joseph Weizenbaum</h3><p>El 8 de enero, en Berlín, en una familia judía.</p></div></li>
+            <li data-c="autor"><span class="yr">1936</span><div class="what"><span class="tag">[autor]</span><h3>Emigra a Estados Unidos</h3><p>Hacia 1936 su familia huye del nazismo y se instala en Detroit.</p></div></li>
+            <li data-c="autor"><span class="yr">1955–63</span><div class="what"><span class="tag">[autor]</span><h3>General Electric</h3><p>Trabaja como ingeniero de sistemas y participa en ERMA, un sistema bancario automatizado.</p></div></li>
+            <li data-c="autor"><span class="yr">1963–64</span><div class="what"><span class="tag">[autor]</span><h3>Llega al MIT</h3><p>Se incorpora como profesor asociado, en el entorno del tiempo compartido (CTSS).</p></div></li>
+            <li data-c="eliza" class="key"><span class="yr">1964–66</span><div class="what"><span class="tag">[eliza]</span><h3>Se escribe ELIZA</h3><p>En MAD-SLIP, sobre CTSS, en un IBM 7094. Según la fuente, el desarrollo se extiende hasta 1967–68.</p></div></li>
+            <li data-c="eliza" class="key"><span class="yr">1966</span><div class="what"><span class="tag">[eliza]</span><h3>Artículo en Communications of the ACM</h3><p>Enero. Se publica el guion DOCTOR; el código del programa no se publica.</p></div></li>
+            <li data-c="versiones"><span class="yr">1966</span><div class="what"><span class="tag">[versiones]</span><h3>Primera copia en Lisp</h3><p>Bernie Cosell (BBN) la escribe a partir del artículo. Circulará por ARPANET.</p></div></li>
+            <li data-c="critica"><span class="yr">1972</span><div class="what"><span class="tag">[crítica]</span><h3>«Albtraum Computer»</h3><p>Enero. Weizenbaum publica en <em>Die Zeit</em> un artículo crítico con el rumbo de la informática.</p></div></li>
+            <li data-c="parry" class="key"><span class="yr">1972</span><div class="what"><span class="tag">[parry]</span><h3>Nace PARRY</h3><p>Kenneth Colby, en Stanford, simula a una persona con esquizofrenia paranoide.</p></div></li>
+            <li data-c="parry"><span class="yr">1972</span><div class="what"><span class="tag">[parry]</span><h3>PARRY conversa con DOCTOR</h3><p>18 de septiembre: sesión por ARPANET entre PARRY (Stanford) y DOCTOR (BBN). Se difunde como RFC 439 en enero de 1973; en octubre, demostración pública en la ICCC.</p></div></li>
+            <li data-c="versiones"><span class="yr">1973–77</span><div class="what"><span class="tag">[versiones]</span><h3>ELIZA llega a los computadores personales</h3><p>Jeff Shrager escribe una versión en BASIC (1973) que se publica en <em>Creative Computing</em> en 1977.</p></div></li>
+            <li data-c="critica" class="key"><span class="yr">1976</span><div class="what"><span class="tag">[crítica]</span><h3>Computer Power and Human Reason</h3><p>Weizenbaum sistematiza su crítica: poder hacer algo no equivale a deber delegarlo en una máquina.</p></div></li>
+            <li data-c="versiones"><span class="yr">2005</span><div class="what"><span class="tag">[versiones]</span><h3>elizabot.js</h3><p>Norbert Landsteiner (mass:werk) reescribe el motor en JavaScript. Es el que usa esta página.</p></div></li>
+            <li data-c="autor"><span class="yr">2008</span><div class="what"><span class="tag">[autor]</span><h3>Muere Weizenbaum</h3><p>El 5 de marzo, a los 85 años.</p></div></li>
+            <li data-c="codigo" class="key"><span class="yr">2021</span><div class="what"><span class="tag">[código]</span><h3>Aparece el código original</h3><p>Jeff Shrager y el archivista Myles Crowley hallan una copia impresa entre los papeles de Weizenbaum, en el MIT.</p></div></li>
+            <li data-c="codigo"><span class="yr">2024</span><div class="what"><span class="tag">[código]</span><h3>ELIZA vuelve a funcionar</h3><p>21 de diciembre: el programa original corre de nuevo sobre un CTSS emulado.</p></div></li>
+            <li data-c="codigo"><span class="yr">2025</span><div class="what"><span class="tag">[código]</span><h3>ELIZA Reanimated</h3><p>Enero. La restauración se describe en un artículo abierto en arXiv.</p></div></li>
+            <li data-c="codigo"><span class="yr">2026</span><div class="what"><span class="tag">[código]</span><h3>Inventing ELIZA</h3><p>MIT Press publica el libro del proyecto Finding ELIZA.</p></div></li>
+          </ol>
+        </div>
+      </article>
+
+      <!-- ─── DESCARGA ─── -->
+      <article class="sec wide" id="descargar" data-nav="descargar">
+        <header class="sec-head"><span class="num">08</span><h2>Descargar</h2></header>
+        <div class="sec-body rv">
+          <p>Para ejecutarla y modificarla en local: tres archivos, sin instalación ni servidor. El paquete no incluye PARRY.</p>
+          <div class="files">
+            <div class="cmd">$ ls elizaespanol/</div>
+            <div class="file"><span class="perm">-rw</span><span>index.html</span><span class="desc">la interfaz de chat</span></div>
+            <div class="file"><span class="perm">-rw</span><span>elizabot.js</span><span class="desc">el motor de mass:werk, sin tocar</span></div>
+            <div class="file"><span class="perm">-rw</span><span>eliza-espanol.js</span><span class="desc">el guion ampliado en español</span></div>
+          </div>
+          <div class="dl-row">
+            <a href="elizaespanol.zip" class="btn primary" download>Descargar elizaespanol.zip</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- ─── EDITOR ─── -->
+      <article class="sec" id="editor" data-nav="editor">
+        <header class="sec-head"><span class="num">09</span><h2>El editor de guiones</h2></header>
+        <div class="sec-body rv">
+          <p class="lead">ELIZA es el motor; el guion es lo que dice. El editor permite escribir ese guion sin tocar el código del programa.</p>
+          <p>Se abre en una página aparte, con dos vistas: <strong>Estructura</strong>, para quien prefiere formularios, y <strong>Código</strong>, para editar directamente el JavaScript del guion. A su lado hay siempre una vista previa donde puedes conversar con tu versión mientras la modificas.</p>
+
+          <div class="trio">
+            <div>
+              <span class="n">01</span>
+              <h3>Escribe</h3>
+              <p>Define saludos, despedidas, palabras de salida, sinónimos y reglas. Cada regla tiene una palabra clave, un rango de 0 a 10 y una lista de respuestas, una por línea.</p>
+            </div>
+            <div>
+              <span class="n">02</span>
+              <h3>Prueba</h3>
+              <p>Pulsa «Aplicar» y habla con tu guion. Con <code>(2)</code> reutilizas lo que dijo la persona: «estoy cansado» puede volver como «¿por qué estás cansado?».</p>
+            </div>
+            <div>
+              <span class="n">03</span>
+              <h3>Descarga</h3>
+              <p>«Descargar» genera <code>eliza-custom.js</code> (tu guion) y <code>probar-eliza.html</code> (una página mínima para probarlo). Colócalos junto a <code>elizabot.js</code>.</p>
+            </div>
+          </div>
+
+          <ul class="plain">
+            <li>Los cambios se guardan automáticamente en tu navegador, así que no se pierde el trabajo si cierras la pestaña (mientras no borres los datos del sitio).</li>
+            <li>«Cargar» abre un guion <code>.js</code> que ya hayas descargado; «Base» vuelve al guion original, con la advertencia de que se pierden los cambios no descargados.</li>
+            <li>Tiene tema claro y oscuro y tamaño de texto propios.</li>
+            <li>Edita solo a ELIZA; PARRY no forma parte del editor.</li>
+          </ul>
+          <p>Hay también una razón histórica para que exista: Weizenbaum separó el motor del guion, y el sistema original llegó a permitir enseñarle reglas nuevas durante la conversación <span class="ref">[3]</span>. El editor retoma esa idea y la lleva a un formato cómodo para quien no programa.</p>
+          <div class="dl-row">
+            <a href="https://proyectoeliza.js.org/editor/" class="btn primary">Abrir el editor [>]</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- ─── FUENTES ─── -->
+      <article class="sec" id="fuentes" data-nav="fuentes">
+        <header class="sec-head"><span class="num">10</span><h2>Fuentes y lecturas</h2></header>
+        <div class="sec-body rv">
+          <p>Las referencias numeradas del texto remiten a esta lista. Los enlaces llevan a páginas externas.</p>
+          <ol class="refs">
+            <li>Weizenbaum, J. (1966). «ELIZA — A computer program for the study of natural language communication between man and machine». <em>Communications of the ACM</em>, 9(1), 36–45.</li>
+            <li>Weizenbaum, J. (1976). <em>Computer Power and Human Reason: From Judgment to Calculation</em>. W. H. Freeman.</li>
+            <li>Lane, R., Hay, A., Schwarz, A., Berry, D. M. y Shrager, J. (2025). «ELIZA Reanimated: The world's first chatbot restored on the world's first time sharing system». <a href="https://arxiv.org/abs/2501.06707">arXiv:2501.06707</a>.</li>
+            <li>Ciston, S., Berry, D., Hay, A., Marino, M., Millican, P., Schwarz, A., Shrager, J. y Weil, P. (2026). <em>Inventing ELIZA: How the First Chatbot Shaped the Future of AI</em>. MIT Press. Sitio del proyecto: <a href="https://findingeliza.org">Finding ELIZA</a>.</li>
+            <li>Cerf, V. (1973). «PARRY Encounters the DOCTOR». <a href="https://datatracker.ietf.org/doc/html/rfc439">RFC 439</a>.</li>
+            <li>IEEE Computer Society. «Joseph Weizenbaum». <a href="https://history.computer.org/pioneers/weizenbaum.html">Computer Pioneers</a>.</li>
+            <li>Rehbein, M. (2020). «Weizenbaum, Joseph». <em>Neue Deutsche Biographie</em>, 27. En <a href="https://www.deutsche-biographie.de/gnd118820591.html">Deutsche Biographie</a>.</li>
+            <li>Shrager, J. «Another wave: a BASIC ELIZA turns the PC generation on to AI» y otros materiales de <a href="https://elizagen.org">ELIZAGEN</a>, sobre la genealogía de ELIZA.</li>
+            <li>Landsteiner, N. <a href="https://www.masswerk.at/elizabot/">elizabot.js</a> (mass:werk, 2005).</li>
+            <li>The New Republic. «The Inventor of the Chatbot Tried to Warn Us About A.I.». <a href="https://newrepublic.com/article/181189/inventor-chatbot-tried-warn-us-ai-joseph-weizenbaum-computer-power-human-reason">Artículo</a>.</li>
+            <li>Colby, K. M., Hilf, F. D., Weber, S. y Kraemer, H. C. (1972). «Turing-like indistinguishability tests for the validation of a computer simulation of paranoid processes». <em>Artificial Intelligence</em>, 3.</li>
+            <li>Gee, S. (19 de enero de 2025). «ELIZA Makes a Comeback». <a href="https://www.i-programmer.info/news/82-heritage/17765-eliza-makes-a-comeback.html">I Programmer</a>.</li>
+          </ol>
+        </div>
+      </article>
+
+    </div>
+  </div>
 </main>
 
-<footer>
-  <div class="brand"><span>Proyecto</span> <span>Eliza</span></div>
-  <nav class="links" aria-label="Enlaces">
-    <a href="https://proyectoeliza.js.org/editor/">[Editor]</a>
-    <a href="mailto:aysermeno@outlook.com">[Contacto]</a>
+<footer class="foot">
+  <div class="brand">Proyecto Eliza</div>
+  <nav aria-label="Enlaces">
+    <a href="#top">[arriba]</a>
+    <a href="#chat">[terminal]</a>
+    <a href="#editor">[editor]</a>
+    <a href="mailto:aysermeno@outlook.com">[contacto]</a>
   </nav>
   <p class="made">Hecho por Yared Sermeño</p>
 </footer>
+
 </body>
 </html>
