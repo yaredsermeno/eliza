@@ -336,32 +336,6 @@ main { flex: 1; }
 }
 .bar input::placeholder { color: var(--faint); }
 .bar .btn { flex: none; }
-.bar .kb-toggle {
-  flex: none;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: 1px solid var(--line);
-  color: var(--soft);
-  padding: .3em .4em;
-  cursor: pointer;
-  line-height: 0;
-}
-.bar .kb-toggle:hover, .bar .kb-toggle.on {
-  color: var(--fg);
-  border-color: var(--fg);
-}
-.bar .kb-toggle svg {
-  width: 1.35em;
-  height: 1.05em;
-  display: block;
-  shape-rendering: crispEdges;
-}
-#stage:fullscreen .bar .kb-toggle, #stage:-webkit-full-screen .bar .kb-toggle { display: inline-flex; }
-#stage.native-kb .pixel-keyboard { display: none !important; }
-#stage:fullscreen.native-kb .pixel-keyboard,
-#stage.native-kb:-webkit-full-screen .pixel-keyboard { display: none !important; }
 .btn {
   font: inherit;
   font-size: .9em;
@@ -379,7 +353,6 @@ main { flex: 1; }
 .btn.primary:hover { background: var(--bg); color: var(--fg); }
 @media (max-width: 600px) {
   .bar { gap: .4em; padding: .45em .5em .45em .7em; }
-  .bar input { font-size: 16px; }
   .bar .btn { padding: .4em .7em; font-size: .85em; }
   .tools .lab { display: none; }
 }
@@ -591,23 +564,14 @@ ol.refs a:hover { opacity: .65; }
   .js .rv { opacity: 1; transform: none; transition: none; }
 }
 
-/* Teclado físico de la terminal: solo aparece en pantalla completa */
 .terminal-pe { font-family: var(--pix) !important; font-size: 1.25em !important; color: var(--fg) !important; padding: 0 .25em !important; }
 #stage:fullscreen .terminal-pe, #stage:-webkit-full-screen .terminal-pe { display: inline-grid; }
-.pixel-keyboard { display:none; background:#f4f4f2; color:#566a82; padding: .55rem; gap:.38rem; flex-shrink:0; font-family:var(--mono); }
-#stage:fullscreen .pixel-keyboard, #stage:-webkit-full-screen .pixel-keyboard { display:grid; }
-.key-row { display:flex; justify-content:center; gap:clamp(2px,.45vw,7px); width:100%; }
-.key-row button { flex:1 1 0; min-width:0; border:2px solid #566a82; border-bottom-width:5px; border-right-width:4px; background:#f7f7f4; color:#566a82; font-family:var(--mono); font-size:clamp(11px,1.8vw,20px); font-weight:400; line-height:1; min-height:clamp(26px,4.3vh,42px); padding:.25em .12em; cursor:pointer; box-shadow:inset 2px 2px 0 #fff; touch-action:manipulation; }
-.key-row button:active, .key-row button.key-active { transform:translate(1px,2px); border-bottom-width:3px; background:#dce1e6; }
-.key-row button .pixel-icon { display:block; width:1.25em; height:1.1em; margin:auto; shape-rendering:crispEdges; }
-.key-row .space-key { flex:4 1 0; }
-/* Fuera de pantalla completa no hay campo de escritura: la terminal invita a tocar PE. */
-.bar { display:none; }
+/* La entrada usa el teclado nativo del dispositivo y hereda el tamaño de la terminal. */
+.bar { display: none; }
 .start-hint { display:flex; align-items:center; gap:.6em; border-top:1px solid var(--line); padding:.75em .9em; color:var(--soft); font-family:var(--mono); font-size:.9em; }
 .start-hint .hint-mark { color:var(--fg); font-family:var(--pix); font-size:1.35em; flex:none; }
 #stage:fullscreen .bar, #stage:-webkit-full-screen .bar { display:flex; }
 #stage:fullscreen .start-hint, #stage:-webkit-full-screen .start-hint { display:none; }
-#stage:fullscreen .bar input, #stage:-webkit-full-screen .bar input { font-size:16px; }
 #stage:fullscreen, #stage:-webkit-full-screen { padding:0; gap:0; }
 #stage:fullscreen .frame, #stage:-webkit-full-screen .frame { height:auto; min-height:0; flex:1; }
 #stage:fullscreen .term, #stage:-webkit-full-screen .term { flex:1; }
@@ -618,15 +582,11 @@ ol.refs a:hover { opacity: .65; }
 #splash .brand-logo { animation: pePulse 5.2s steps(1,end) infinite; }
 @keyframes pePulse { 0%,100% { opacity:1; } 50% { opacity:.78; } }
 @media (max-width:520px) {
-  .pixel-keyboard { padding:.35rem; gap:.25rem; }
-  .key-row { gap:3px; }
-  .key-row button { min-height:clamp(27px,4.5vh,38px); font-size:clamp(10px,2.7vw,15px); border-width:2px; border-bottom-width:4px; }
   #stage:fullscreen .tools { padding:.3em .5em; }
   #stage:fullscreen .bar { flex-wrap:nowrap; gap:.35em; padding:.4em .45em .4em .65em; }
   #stage:fullscreen .bar input { flex:1 1 0; min-width:0; }
   #stage:fullscreen .bar .btn { padding:.35em .55em; font-size:.8em; }
 }
-
 </style>
 <script>
 const eliza = new ElizaBot();
@@ -1069,88 +1029,15 @@ window.onload = function () {
 
   showSelector();
   intro();
-  const keyboard = document.getElementById('pixel-keyboard');
   const input = document.getElementById('in');
-  const stageEl = document.getElementById('stage');
-  const kbToggle = document.getElementById('kb-toggle');
-  let nativeKb = false;
-  const isCoarse = window.matchMedia('(pointer: coarse)').matches;
-
   function keepInputVisible() {
     if (!input) return;
     requestAnimationFrame(function () {
-      try {
-        input.scrollLeft = input.scrollWidth;
-      } catch (e) {}
+      try { input.scrollLeft = input.scrollWidth; } catch (e) {}
     });
   }
+  if (input) input.addEventListener('input', keepInputVisible);
 
-  function setNativeKb(on) {
-    nativeKb = !!on;
-    if (stageEl) stageEl.classList.toggle('native-kb', nativeKb);
-    if (kbToggle) {
-      kbToggle.classList.toggle('on', nativeKb);
-      kbToggle.setAttribute('aria-pressed', nativeKb ? 'true' : 'false');
-      kbToggle.title = nativeKb ? 'Usar teclado de la terminal' : 'Usar teclado del dispositivo';
-      kbToggle.setAttribute('aria-label', kbToggle.title);
-    }
-    if (nativeKb && input) {
-      input.focus({ preventScroll: true });
-    } else if (input && document.activeElement === input) {
-      input.blur();
-    }
-  }
-
-  if (input) {
-    input.addEventListener('input', keepInputVisible);
-    input.addEventListener('focus', function () {
-      if (isCoarse && !nativeKb) input.blur();
-    });
-  }
-  if (kbToggle) {
-    kbToggle.addEventListener('click', function () {
-      setNativeKb(!nativeKb);
-    });
-  }
-
-  let capsLock = false, shiftOnce = false;
-  function refreshLetterKeys() {
-    if (!keyboard) return;
-    keyboard.querySelectorAll('button[data-letter]').forEach(function (key) {
-      const letter = key.getAttribute('data-letter');
-      key.textContent = (capsLock || shiftOnce) ? letter.toUpperCase() : letter.toLowerCase();
-    });
-    const caps = keyboard.querySelector('[data-key="CAPS"]');
-    const shift = keyboard.querySelector('[data-key="SHIFT"]');
-    if (caps) caps.classList.toggle('key-active', capsLock);
-    if (shift) shift.classList.toggle('key-active', shiftOnce);
-  }
-  if (keyboard && input) {
-    keyboard.querySelectorAll('button[data-key]').forEach(function (key) {
-      const k = key.getAttribute('data-key');
-      if (/^[A-Z]$/.test(k)) key.setAttribute('data-letter', k);
-    });
-    refreshLetterKeys();
-    keyboard.addEventListener('click', function(ev) {
-      const key = ev.target.closest('button[data-key]'); if (!key) return;
-      const k = key.getAttribute('data-key');
-      if (k === 'CAPS') { capsLock = !capsLock; refreshLetterKeys(); return; }
-      if (k === 'SHIFT') { shiftOnce = !shiftOnce; refreshLetterKeys(); return; }
-      if (k === 'ENTER') { const form = input.closest('form'); if (form) form.requestSubmit(); return; }
-      if (k === 'BACKSPACE' || k === 'CLEAR') {
-        input.value = k === 'CLEAR' ? '' : input.value.slice(0,-1);
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-        keepInputVisible();
-        return;
-      }
-      if (['ESC','F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','TAB','CTRL','ALT'].includes(k)) return;
-      const value = key.hasAttribute('data-letter') ? ((capsLock || shiftOnce) ? k.toUpperCase() : k.toLowerCase()) : k;
-      input.value += value;
-      if (shiftOnce) { shiftOnce = false; refreshLetterKeys(); }
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-      keepInputVisible();
-    });
-  }
   const peStart = document.getElementById('terminal-pe-start');
   if (peStart) peStart.addEventListener('click', function(){
     if (!document.fullscreenElement && !document.webkitFullscreenElement) toggleFullscreen();
@@ -1268,31 +1155,8 @@ window.onload = function () {
           <form class="bar" onsubmit="send(event)">
             <span class="gt" aria-hidden="true">&gt;</span>
             <input id="in" type="text" autocomplete="off" aria-label="Tu mensaje" placeholder="Escribe aquí…">
-            <button type="button" class="kb-toggle" id="kb-toggle" title="Usar teclado del dispositivo" aria-label="Usar teclado del dispositivo" aria-pressed="false">
-              <svg viewBox="0 0 18 12" aria-hidden="true" shape-rendering="crispEdges">
-                <rect x="0" y="0" width="18" height="12" fill="none" stroke="currentColor" stroke-width="1"/>
-                <rect x="2" y="2" width="2" height="2" fill="currentColor"/>
-                <rect x="5" y="2" width="2" height="2" fill="currentColor"/>
-                <rect x="8" y="2" width="2" height="2" fill="currentColor"/>
-                <rect x="11" y="2" width="2" height="2" fill="currentColor"/>
-                <rect x="14" y="2" width="2" height="2" fill="currentColor"/>
-                <rect x="2" y="5" width="2" height="2" fill="currentColor"/>
-                <rect x="5" y="5" width="2" height="2" fill="currentColor"/>
-                <rect x="8" y="5" width="2" height="2" fill="currentColor"/>
-                <rect x="11" y="5" width="2" height="2" fill="currentColor"/>
-                <rect x="14" y="5" width="2" height="2" fill="currentColor"/>
-                <rect x="4" y="8" width="10" height="2" fill="currentColor"/>
-              </svg>
-            </button>
             <button type="submit" class="btn primary">Enviar</button>
           </form>
-          <div id="pixel-keyboard" class="pixel-keyboard" aria-label="Teclado de terminal">
-            <div class="key-row"><button data-key="ESC">ESC</button><button data-key="F1">F1</button><button data-key="F2">F2</button><button data-key="F3">F3</button><button data-key="F4">F4</button><button data-key="F5">F5</button><button data-key="F6">F6</button><button data-key="F7">F7</button><button data-key="F8">F8</button><button data-key="F9">F9</button><button data-key="F10">F10</button></div>
-            <div class="key-row"><button data-key="TAB">TAB</button><button data-key="Q">Q</button><button data-key="W">W</button><button data-key="E">E</button><button data-key="R">R</button><button data-key="T">T</button><button data-key="Y">Y</button><button data-key="U">U</button><button data-key="I">I</button><button data-key="O">O</button><button data-key="P">P</button><button data-key="BACKSPACE" aria-label="Retroceso" title="Retroceso"><svg class="pixel-icon" viewBox="0 0 16 12" aria-hidden="true" shape-rendering="crispEdges"><path d="M5 1H15V11H5L1 6Z" fill="currentColor"/><path d="M7 4L11 8M11 4L7 8" stroke="#f7f7f4" stroke-width="1.5"/></svg></button></div>
-            <div class="key-row"><button data-key="CAPS" aria-label="Bloqueo de mayúsculas" title="Mayúsculas"><svg class="pixel-icon" viewBox="0 0 16 14" aria-hidden="true" shape-rendering="crispEdges"><path fill="currentColor" d="M7 1H9V3H11V5H13V7H10V12H6V7H3V5H5V3H7Z"/></svg></button><button data-key="A">A</button><button data-key="S">S</button><button data-key="D">D</button><button data-key="F">F</button><button data-key="G">G</button><button data-key="H">H</button><button data-key="J">J</button><button data-key="K">K</button><button data-key="L">L</button><button data-key="ENTER" aria-label="Enviar" title="Enviar"><svg class="pixel-icon" viewBox="0 0 16 14" aria-hidden="true" shape-rendering="crispEdges"><path fill="currentColor" d="M1 2H4V7H12V4H15V10H4V13H1Z"/></svg></button></div>
-            <div class="key-row"><button data-key="SHIFT" aria-label="Mayúsculas" title="Mayúsculas"><svg class="pixel-icon" viewBox="0 0 16 14" aria-hidden="true" shape-rendering="crispEdges"><path fill="currentColor" d="M7 1H9V3H11V5H13V7H10V13H6V7H3V5H5V3H7Z"/></svg></button><button data-key="Z">Z</button><button data-key="X">X</button><button data-key="C">C</button><button data-key="V">V</button><button data-key="B">B</button><button data-key="N">N</button><button data-key="M">M</button><button data-key=",">,</button><button data-key=".">.</button><button data-key="-">-</button></div>
-            <div class="key-row"><button data-key="CTRL">CTRL</button><button data-key="ALT">ALT</button><button data-key=" " class="space-key">ESPACIO</button><button data-key="CLEAR" aria-label="Vaciar texto" title="Vaciar texto"><svg class="pixel-icon" viewBox="0 0 16 14" aria-hidden="true" shape-rendering="crispEdges"><path fill="currentColor" d="M2 2H14V4H12V6H14V8H12V10H14V12H2V10H4V8H2V6H4V4H2Z"/><path d="M6 5L10 9M10 5L6 9" stroke="#f7f7f4" stroke-width="1.5"/></svg></button></div>
-          </div>
         </div>
       </div>
     </section>
